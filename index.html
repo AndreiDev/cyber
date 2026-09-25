@@ -57,7 +57,7 @@
   <header>
     <div class="kicker">CYBERSECURITY FLUENCY LIBRARY</div>
     <h1>Two pages, two altitudes</h1>
-    <p class="lede">A learning library on the security craft, for someone who can program but is new to security. It reads at two levels: the <strong>Field Map</strong>, a standalone view of the whole landscape, and the <strong>Codex</strong>, thirty real cases that each teach one intrusion start to finish.</p>
+    <p class="lede">A learning library on the security craft, for someone who can program but is new to security. It reads at two levels: the <strong>Field Map</strong>, a standalone view of the whole landscape, and the <strong>Codex</strong>, thirty real cases that each teach one attack start to finish.</p>
     <p class="hint">Start with the Field Map’s Foundations section. The detection rules, and two longer worked methods (building a detection end to end, and emulating an attacker to test it), live inside the codex cards.</p>
   </header>
 
@@ -72,7 +72,7 @@
     <h2>Zoom in</h2>
     <div class="cards">
       <a class="c" href="attack-defense-codex.html" style="--c:var(--def)"><p class="t">🛰️ Attack → Defense Codex</p><p class="d">30 real cases from 2014 to 2025, each a short course: concepts first, the story in plain language, the attack step by step with the attacker’s reasoning and the trace each step leaves, the defense with reasoning, <b style="color:var(--fg)">detection rules you can run</b> (in the standard rule formats: Sigma for logs, YARA for files, KQL for Microsoft’s security tools, Falco for containers; or the honest alternative where no rule can work), the real outcome, lessons, and a self-check. Filterable by attack surface, the part of an organisation the attack came through (identity, cloud, supply chain and eight more).</p><span class="f">attack-defense-codex.html</span></a>
-      <a class="c" href="attack-defense-codex.html#blue-loop" style="--c:var(--ok)"><p class="t">🔁 Inside case 10 — the blue loop</p><p class="d">How a detection engineer builds one detection end to end, using Kerberoasting (a classic attack that cracks Windows service-account passwords offline) as the example: hypothesis → emulate → author → tune → measure → document → maintain.</p><span class="f">attack-defense-codex.html#blue-loop</span></a>
+      <a class="c" href="attack-defense-codex.html#blue-loop" style="--c:var(--ok)"><p class="t">🔁 Inside case 10 — the blue loop</p><p class="d">How a detection engineer builds one detection end to end, using Kerberoasting (a classic attack that cracks Windows service-account passwords offline) as the example: hypothesis → check telemetry → emulate → author → validate → tune → measure → document → maintain.</p><span class="f">attack-defense-codex.html#blue-loop</span></a>
       <a class="c" href="attack-defense-codex.html#red-loop" style="--c:var(--purple)"><p class="t">🟣 Inside case 12 — the red / purple loop</p><p class="d">The attacker’s side of the same loop: an authorized red team imitates a real adversary and tries to evade detection, every concept paired with its defensive counter, converging on purple teaming (attackers and defenders working side by side to find and close detection gaps).</p><span class="f">attack-defense-codex.html#red-loop</span></a>
     </div>
   </div>
