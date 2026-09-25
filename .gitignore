@@ -1,0 +1,11 @@
+# Only the published site is tracked: the three pages and the coverage JSON they link.
+*
+!.gitignore
+!.nojekyll
+!index.html
+!field-map.html
+!attack-defense-codex.html
+!attack-navigator-enterprise.json
+!attack-navigator-mobile.json
+!attack-navigator-ics.json
+!atlas-coverage-ai.json

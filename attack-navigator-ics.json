@@ -1,0 +1,89 @@
+{
+  "name": "Codex Coverage — ICS",
+  "versions": {
+    "attack": "19",
+    "navigator": "5.1.0",
+    "layer": "4.5"
+  },
+  "domain": "ics-attack",
+  "description": "ICS ATT&CK techniques from codex case #20 (Industroyer2 / Sandworm). ICS ATT&CK is a separate domain from Enterprise.",
+  "sorting": 3,
+  "hideDisabled": true,
+  "techniques": [
+    {
+      "techniqueID": "T0809",
+      "score": 1,
+      "comment": "Seen in: #20 Flipping breakers from code",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T0827",
+      "score": 1,
+      "comment": "Seen in: #20 Flipping breakers from code",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T0886",
+      "score": 1,
+      "comment": "Seen in: #20 Flipping breakers from code",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1692.001",
+      "score": 1,
+      "comment": "Seen in: #20 Flipping breakers from code",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    }
+  ],
+  "gradient": {
+    "colors": [
+      "#f8e9d0ff",
+      "#e4a64eff",
+      "#c0392bff"
+    ],
+    "minValue": 1,
+    "maxValue": 1
+  },
+  "legendItems": [
+    {
+      "label": "1 case",
+      "color": "#f8e9d0"
+    },
+    {
+      "label": "heavily reused technique",
+      "color": "#c0392b"
+    }
+  ],
+  "showTacticRowBackground": true,
+  "tacticRowBackground": "#131822",
+  "selectTechniquesAcrossTactics": true,
+  "layout": {
+    "layout": "side",
+    "showID": true,
+    "showName": true
+  }
+}

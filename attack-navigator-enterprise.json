@@ -1,0 +1,821 @@
+{
+  "name": "Codex Coverage — Enterprise",
+  "versions": {
+    "attack": "19",
+    "navigator": "5.1.0",
+    "layer": "4.5"
+  },
+  "domain": "enterprise-attack",
+  "description": "Enterprise ATT&CK techniques from the 30 Attack-Defense Codex cases. Score = number of cases using each technique; hotter = more reused. Comments list which cases. ATT&CK v19 (2026).",
+  "sorting": 3,
+  "hideDisabled": true,
+  "techniques": [
+    {
+      "techniqueID": "T1078",
+      "score": 9,
+      "comment": "Seen in: #3 One leaked password, no second factor; #6 MFA fatigue, then secrets in a script; #10 Cracking service tickets offline; #14 Stolen passwords, no MFA, a data-warehouse spree; #19 Bribing the support desk from the inside; #24 A CI action that printed everyone’s secrets; #26 14,000 stuffed logins, 6.9 million people exposed; #27 Inside the phone network; #30 Reading the server’s memory, 64KB at a time",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1190",
+      "score": 8,
+      "comment": "Seen in: #4 A log line that runs code; #5 Mass data theft through a file-transfer app; #7 SSRF to cloud credentials to the data lake; #11 Chaining two bugs on a VPN box; #16 Skipping a firewall’s admin login; #23 An API that never asked who was calling; #27 Inside the phone network; #30 Reading the server’s memory, 64KB at a time",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1657",
+      "score": 5,
+      "comment": "Seen in: #9 The invoice that wasn’t; #19 Bribing the support desk from the inside; #22 The video call where everyone was fake; #25 The login page that was a proxy; #28 Signing a transaction that said something else",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1486",
+      "score": 4,
+      "comment": "Seen in: #3 One leaked password, no second factor; #8 A phone call to the help desk; #12 Living off the land to ransomware; #29 The worm that shut the hospitals",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1078.004",
+      "score": 3,
+      "comment": "Seen in: #6 MFA fatigue, then secrets in a script; #7 SSRF to cloud credentials to the data lake; #13 Password spray into OAuth abuse",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1133",
+      "score": 3,
+      "comment": "Seen in: #3 One leaked password, no second factor; #15 Cryptojacking exposed containers; #16 Skipping a firewall’s admin login",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1195.002",
+      "score": 3,
+      "comment": "Seen in: #1 A poisoned software update; #2 A backdoor two years in the making; #28 Signing a transaction that said something else",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1213",
+      "score": 3,
+      "comment": "Seen in: #5 Mass data theft through a file-transfer app; #19 Bribing the support desk from the inside; #23 An API that never asked who was calling",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1490",
+      "score": 3,
+      "comment": "Seen in: #3 One leaked password, no second factor; #12 Living off the land to ransomware; #29 The worm that shut the hospitals",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1566",
+      "score": 3,
+      "comment": "Seen in: #9 The invoice that wasn’t; #12 Living off the land to ransomware; #28 Signing a transaction that said something else",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1567",
+      "score": 3,
+      "comment": "Seen in: #3 One leaked password, no second factor; #14 Stolen passwords, no MFA, a data-warehouse spree; #26 14,000 stuffed logins, 6.9 million people exposed",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1021",
+      "score": 2,
+      "comment": "Seen in: #10 Cracking service tickets offline; #11 Chaining two bugs on a VPN box",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1098.004",
+      "score": 2,
+      "comment": "Seen in: #16 Skipping a firewall’s admin login; #27 Inside the phone network",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1119",
+      "score": 2,
+      "comment": "Seen in: #23 An API that never asked who was calling; #26 14,000 stuffed logins, 6.9 million people exposed",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1136.001",
+      "score": 2,
+      "comment": "Seen in: #16 Skipping a firewall’s admin login; #27 Inside the phone network",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1195.001",
+      "score": 2,
+      "comment": "Seen in: #2 A backdoor two years in the making; #24 A CI action that printed everyone’s secrets",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1496.001",
+      "score": 2,
+      "comment": "Seen in: #4 A log line that runs code; #15 Cryptojacking exposed containers",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1505.003",
+      "score": 2,
+      "comment": "Seen in: #5 Mass data theft through a file-transfer app; #11 Chaining two bugs on a VPN box",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1539",
+      "score": 2,
+      "comment": "Seen in: #25 The login page that was a proxy; #30 Reading the server’s memory, 64KB at a time",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1552",
+      "score": 2,
+      "comment": "Seen in: #11 Chaining two bugs on a VPN box; #24 A CI action that printed everyone’s secrets",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1552.005",
+      "score": 2,
+      "comment": "Seen in: #7 SSRF to cloud credentials to the data lake; #15 Cryptojacking exposed containers",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1554",
+      "score": 2,
+      "comment": "Seen in: #1 A poisoned software update; #2 A backdoor two years in the making",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1558.003",
+      "score": 2,
+      "comment": "Seen in: #10 Cracking service tickets offline; #12 Living off the land to ransomware",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1684.001",
+      "score": 2,
+      "comment": "Seen in: #8 A phone call to the help desk; #22 The video call where everyone was fake",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1020",
+      "score": 1,
+      "comment": "Seen in: #23 An API that never asked who was calling",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1040",
+      "score": 1,
+      "comment": "Seen in: #27 Inside the phone network",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1041",
+      "score": 1,
+      "comment": "Seen in: #5 Mass data theft through a file-transfer app",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1046",
+      "score": 1,
+      "comment": "Seen in: #29 The worm that shut the hospitals",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1059",
+      "score": 1,
+      "comment": "Seen in: #4 A log line that runs code",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1059.001",
+      "score": 1,
+      "comment": "Seen in: #12 Living off the land to ransomware",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1059.006",
+      "score": 1,
+      "comment": "Seen in: #24 A CI action that printed everyone’s secrets",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1071.001",
+      "score": 1,
+      "comment": "Seen in: #1 A poisoned software update",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1078.002",
+      "score": 1,
+      "comment": "Seen in: #10 Cracking service tickets offline",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1090",
+      "score": 1,
+      "comment": "Seen in: #17 Reset-flooding the whole internet",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1098.003",
+      "score": 1,
+      "comment": "Seen in: #13 Password spray into OAuth abuse",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1105",
+      "score": 1,
+      "comment": "Seen in: #4 A log line that runs code",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1110.003",
+      "score": 1,
+      "comment": "Seen in: #13 Password spray into OAuth abuse",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1110.004",
+      "score": 1,
+      "comment": "Seen in: #26 14,000 stuffed logins, 6.9 million people exposed",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1114",
+      "score": 1,
+      "comment": "Seen in: #9 The invoice that wasn’t",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1114.002",
+      "score": 1,
+      "comment": "Seen in: #13 Password spray into OAuth abuse",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1199",
+      "score": 1,
+      "comment": "Seen in: #19 Bribing the support desk from the inside",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1210",
+      "score": 1,
+      "comment": "Seen in: #29 The worm that shut the hospitals",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1212",
+      "score": 1,
+      "comment": "Seen in: #30 Reading the server’s memory, 64KB at a time",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1213.006",
+      "score": 1,
+      "comment": "Seen in: #14 Stolen passwords, no MFA, a data-warehouse spree",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1485",
+      "score": 1,
+      "comment": "Seen in: #29 The worm that shut the hospitals",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1499.002",
+      "score": 1,
+      "comment": "Seen in: #17 Reset-flooding the whole internet",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1499.003",
+      "score": 1,
+      "comment": "Seen in: #17 Reset-flooding the whole internet",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1530",
+      "score": 1,
+      "comment": "Seen in: #7 SSRF to cloud credentials to the data lake",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1550.001",
+      "score": 1,
+      "comment": "Seen in: #28 Signing a transaction that said something else",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1550.004",
+      "score": 1,
+      "comment": "Seen in: #25 The login page that was a proxy",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1552.001",
+      "score": 1,
+      "comment": "Seen in: #6 MFA fatigue, then secrets in a script",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1555.003",
+      "score": 1,
+      "comment": "Seen in: #14 Stolen passwords, no MFA, a data-warehouse spree",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1556",
+      "score": 1,
+      "comment": "Seen in: #2 A backdoor two years in the making",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1556.006",
+      "score": 1,
+      "comment": "Seen in: #8 A phone call to the help desk",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1557",
+      "score": 1,
+      "comment": "Seen in: #25 The login page that was a proxy",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1564.008",
+      "score": 1,
+      "comment": "Seen in: #9 The invoice that wasn’t",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1566.002",
+      "score": 1,
+      "comment": "Seen in: #25 The login page that was a proxy",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1568.002",
+      "score": 1,
+      "comment": "Seen in: #1 A poisoned software update",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1572",
+      "score": 1,
+      "comment": "Seen in: #27 Inside the phone network",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1583.005",
+      "score": 1,
+      "comment": "Seen in: #17 Reset-flooding the whole internet",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1598",
+      "score": 1,
+      "comment": "Seen in: #8 A phone call to the help desk",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1602.002",
+      "score": 1,
+      "comment": "Seen in: #27 Inside the phone network",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1606.002",
+      "score": 1,
+      "comment": "Seen in: #1 A poisoned software update",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1610",
+      "score": 1,
+      "comment": "Seen in: #15 Cryptojacking exposed containers",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1621",
+      "score": 1,
+      "comment": "Seen in: #6 MFA fatigue, then secrets in a script",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    }
+  ],
+  "gradient": {
+    "colors": [
+      "#f8e9d0ff",
+      "#e4a64eff",
+      "#c0392bff"
+    ],
+    "minValue": 1,
+    "maxValue": 10
+  },
+  "legendItems": [
+    {
+      "label": "1 case",
+      "color": "#f8e9d0"
+    },
+    {
+      "label": "heavily reused technique",
+      "color": "#c0392b"
+    }
+  ],
+  "showTacticRowBackground": true,
+  "tacticRowBackground": "#131822",
+  "selectTechniquesAcrossTactics": true,
+  "layout": {
+    "layout": "side",
+    "showID": true,
+    "showName": true
+  }
+}

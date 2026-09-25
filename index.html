@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cybersecurity Fluency Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{color-scheme:dark; --ink:#0C0F14; --panel:#131822; --panel-2:#19212C; --line:#28313E; --line-soft:#1E2631;
+    --fg:#E7EDF4; --muted:#94A0B0; --muted-dim:#66717F; --amber:#E4A64E; --def:#57AECB; --atk:#E06A6A; --purple:#AD8CE6; --ok:#6CC08A;
+    box-sizing:border-box; padding-top:env(safe-area-inset-top,0px);}
+  *{box-sizing:border-box;} body{margin:0; background:var(--ink); color:var(--fg); font-family:"IBM Plex Sans",system-ui,sans-serif; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:900px; margin:0 auto; padding:0 20px 90px;}
+  a{color:var(--amber); text-decoration:none;}
+  header{padding:60px 0 30px; border-bottom:1px solid var(--line-soft);}
+  .kicker{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em; color:var(--amber); display:flex; align-items:center; gap:10px; margin-bottom:20px;}
+  .kicker::before{content:""; flex:0 0 26px; height:1px; background:var(--amber);}
+  .kicker{align-items:flex-start; line-height:1.5;} .kicker::before{margin-top:.72em;}
+  @media (max-width:560px){ .kicker{font-size:10.5px; letter-spacing:.1em; gap:8px;} .kicker::before{flex-basis:16px;} }
+  h1{font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:clamp(2rem,5vw,3rem); line-height:1.05; letter-spacing:-.02em; margin:0 0 16px;}
+  .lede{font-size:1.1rem; line-height:1.6; color:var(--muted); margin:0 0 12px; text-wrap:pretty;}
+  .lede strong{color:var(--fg); font-weight:600;}
+  .hint{font-size:.92rem; line-height:1.55; color:var(--muted-dim); margin:0 0 0; text-wrap:pretty;}
+  h1{text-wrap:balance;}
+  .grp{margin-top:40px;} .grp h2{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted-dim); margin:0 0 12px;}
+  .cards{display:grid; gap:10px;}
+  .c{display:block; border:1px solid var(--line-soft); border-left:3px solid var(--c,var(--muted)); border-radius:11px; padding:16px 18px; background:var(--panel); transition:border-color .15s;}
+  .c:hover{border-color:var(--line); border-left-color:var(--c,var(--muted));}
+  .c .t{font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.08rem; margin:0 0 4px; color:var(--fg);}
+  .c .d{font-size:.9rem; color:var(--muted); margin:0;}
+  .c .f{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--muted-dim); margin-top:6px; display:block;}
+  .note{margin-top:36px; padding:18px 20px; border:1px solid var(--line-soft); border-radius:11px; background:var(--panel-2); font-size:.9rem; color:var(--muted);}
+  .note{scroll-margin-top:58px;} .note:target{border-color:var(--amber);}
+  .note b{color:var(--fg);} .note code{font-family:"IBM Plex Mono",monospace; background:var(--panel); padding:1px 5px; border-radius:4px; border:1px solid var(--line); font-size:.85em;}
+  footer{margin-top:40px; padding-top:22px; border-top:1px solid var(--line-soft); color:var(--muted-dim); font-size:.84rem;}
+
+  /* shared library header — identical on every page (only max-width follows the page's .wrap).
+     Fixed 41px tall (40px + border): sticky bars below sit at top:38px and scroll-padding assumes it. */
+  .libnav{position:sticky; top:0; z-index:60; background:rgba(12,15,20,.94); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border-bottom:1px solid var(--line-soft);}
+  .libnav-in{max-width:900px; height:40px; margin:0 auto; padding:0 20px; display:flex; gap:4px; align-items:center;}
+  .libnav a{flex:0 0 auto; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1; letter-spacing:.02em; color:var(--muted); text-decoration:none; border:none; padding:7px 11px; border-radius:6px; white-space:nowrap;}
+  .libnav a:hover{color:var(--fg); background:var(--panel-2); border:none;}
+  .libnav a:focus-visible{outline:2px solid var(--amber); outline-offset:-2px;}
+  .libnav a[aria-current="page"]{color:var(--fg); background:var(--panel-2); box-shadow:inset 0 0 0 1px var(--line);}
+  .libnav a.home{display:flex; align-items:center; gap:9px; margin-right:auto; padding-left:0; font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:14px; letter-spacing:-.005em; color:var(--fg); background:none; box-shadow:none;}
+  .libnav a.home::before{content:""; width:8px; height:8px; border-radius:2px; background:var(--amber); flex:0 0 auto;}
+  .libnav a.home:hover{color:var(--amber);}
+  @media (max-width:420px){ .libnav a.home .w{display:none;} .libnav a{padding:7px 9px;} }
+</style>
+</head>
+<body>
+<nav class="libnav" aria-label="Library"><div class="libnav-in"><a class="home" href="index.html" title="Library home" aria-current="page"><span><span class="w">Cybersecurity </span>Fluency Library</span></a><a href="field-map.html" title="The Field Map — the high-level view">Map</a><a href="attack-defense-codex.html" title="Attack → Defense Codex — 30 cases, with their detection rules and deep dives">Codex</a></div></nav>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">CYBERSECURITY FLUENCY LIBRARY</div>
+    <h1>Two pages, two altitudes</h1>
+    <p class="lede">A learning library on the security craft, for someone who can program but is new to security. It reads at two levels: the <strong>Field Map</strong>, a standalone view of the whole landscape, and the <strong>Codex</strong>, thirty real cases that each teach one intrusion start to finish.</p>
+    <p class="hint">Start with the Field Map’s Foundations section. The detection rules, and two longer worked methods (building a detection end to end, and emulating an attacker to test it), live inside the codex cards.</p>
+  </header>
+
+  <div class="grp">
+    <h2>Zoom out</h2>
+    <div class="cards">
+      <a class="c" href="field-map.html" style="--c:var(--amber)"><p class="t">🗺️ The Field Map</p><p class="d">The high-level view, complete on its own — twelve foundational building blocks, the attack lifecycle (the 15 stages of an intrusion in MITRE ATT&CK, the industry’s shared catalogue of attacker behaviour), the eleven attack surfaces, every product category (what it does, what it sees, where it fails), the disciplines, the adversaries, and the shared frameworks. Read this first.</p><span class="f">field-map.html</span></a>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2>Zoom in</h2>
+    <div class="cards">
+      <a class="c" href="attack-defense-codex.html" style="--c:var(--def)"><p class="t">🛰️ Attack → Defense Codex</p><p class="d">30 real cases from 2014 to 2025, each a short course: concepts first, the story in plain language, the attack step by step with the attacker’s reasoning and the trace each step leaves, the defense with reasoning, <b style="color:var(--fg)">detection rules you can run</b> (in the standard rule formats: Sigma for logs, YARA for files, KQL for Microsoft’s security tools, Falco for containers; or the honest alternative where no rule can work), the real outcome, lessons, and a self-check. Filterable by attack surface, the part of an organisation the attack came through (identity, cloud, supply chain and eight more).</p><span class="f">attack-defense-codex.html</span></a>
+      <a class="c" href="attack-defense-codex.html#blue-loop" style="--c:var(--ok)"><p class="t">🔁 Inside case 10 — the blue loop</p><p class="d">How a detection engineer builds one detection end to end, using Kerberoasting (a classic attack that cracks Windows service-account passwords offline) as the example: hypothesis → emulate → author → tune → measure → document → maintain.</p><span class="f">attack-defense-codex.html#blue-loop</span></a>
+      <a class="c" href="attack-defense-codex.html#red-loop" style="--c:var(--purple)"><p class="t">🟣 Inside case 12 — the red / purple loop</p><p class="d">The attacker’s side of the same loop: an authorized red team imitates a real adversary and tries to evade detection, every concept paired with its defensive counter, converging on purple teaming (attackers and defenders working side by side to find and close detection gaps).</p><span class="f">attack-defense-codex.html#red-loop</span></a>
+    </div>
+  </div>
+
+  <div class="note" id="layers">
+    <p style="margin:0 0 8px"><b>ATT&CK Navigator layers</b> (JSON, not web pages). MITRE ATT&CK is the public catalogue of attacker techniques that every codex case is tagged with, and the Navigator is MITRE’s free web tool that draws that catalogue as a grid. These layer files colour the grid by how many of the 30 cases use each technique; there are three because enterprise IT, mobile and industrial control systems (ICS) are separate ATT&CK catalogues: <a href="attack-navigator-enterprise.json"><code>attack-navigator-enterprise.json</code></a>, <a href="attack-navigator-mobile.json"><code>-mobile.json</code></a>, <a href="attack-navigator-ics.json"><code>-ics.json</code></a>. Import them at <a href="https://mitre-attack.github.io/attack-navigator/" target="_blank" rel="noopener">mitre-attack.github.io/attack-navigator</a> via <b>Open Existing Layer → Upload from local</b> to see technique coverage as a heatmap. The AI cases map to <a href="https://atlas.mitre.org/" target="_blank" rel="noopener">MITRE ATLAS</a>, MITRE’s equivalent catalogue for attacks on AI systems, instead; ATLAS is not a Navigator domain, so those techniques are listed in a plain reference file, <a href="atlas-coverage-ai.json"><code>atlas-coverage-ai.json</code></a>.</p>
+    <p style="margin:0"><b>Working in Claude Code?</b> See <code>CLAUDE.md</code> in this folder — it gives a fresh session the full project context, file map, and design conventions automatically.</p>
+  </div>
+
+  <footer>Two self-contained HTML pages · dark operator-console theme · Space Grotesk / IBM Plex. No build step — open any file in a browser.</footer>
+</div>
+</body>
+</html>

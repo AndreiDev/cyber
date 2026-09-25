@@ -1,0 +1,50 @@
+{
+  "name": "Codex Coverage — MITRE ATLAS (AI)",
+  "framework": "MITRE ATLAS",
+  "note": "ATLAS is the AI counterpart to ATT&CK and is NOT an ATT&CK Navigator domain, so this is a plain reference file rather than a Navigator layer. Browse these techniques at https://atlas.mitre.org/.",
+  "description": "MITRE ATLAS techniques from the AI cases in the Attack-Defense Codex (#21 EchoLeak prompt injection, #22 deepfake-assisted fraud).",
+  "techniques": [
+    {
+      "techniqueID": "AML.T0051.001",
+      "name": "LLM Prompt Injection: Indirect",
+      "cases": [
+        "#21 The AI assistant that leaked on its own"
+      ]
+    },
+    {
+      "techniqueID": "AML.T0052.001",
+      "name": "Deepfake-Assisted Phishing",
+      "cases": [
+        "#22 The video call where everyone was fake"
+      ]
+    },
+    {
+      "techniqueID": "AML.T0070",
+      "name": "RAG Poisoning",
+      "cases": [
+        "#21 The AI assistant that leaked on its own"
+      ]
+    },
+    {
+      "techniqueID": "AML.T0077",
+      "name": "LLM Response Rendering",
+      "cases": [
+        "#21 The AI assistant that leaked on its own"
+      ]
+    },
+    {
+      "techniqueID": "AML.T0085",
+      "name": "Data from AI Services",
+      "cases": [
+        "#21 The AI assistant that leaked on its own"
+      ]
+    },
+    {
+      "techniqueID": "AML.T0088",
+      "name": "Generate Deepfakes",
+      "cases": [
+        "#22 The video call where everyone was fake"
+      ]
+    }
+  ]
+}
