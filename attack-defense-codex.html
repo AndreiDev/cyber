@@ -1952,8 +1952,8 @@ CIRunnerEvents
 | where TimeGenerated between (datetime(2025-03-12) .. datetime(2025-03-16))   // tags were malicious 14-15 Mar; audit wider
 | summarize dests = make_set(RemoteHost), procs = make_set(ProcessName)
     by Repo, WorkflowName, JobId
-| where tostring(dests) has "gist.githubusercontent.com"   // payload host in this case (what Harden-Runner flagged)
-   or tostring(procs) has_any ("python", "python3")         // interpreter not normally in this job
+| where set_has_element(dests, "gist.githubusercontent.com")   // payload host in this case (what Harden-Runner flagged)
+   or set_has_element(procs, "python") or set_has_element(procs, "python3")   // interpreter not normally in this job
 // Durable version: diff each workflow's egress + process set against its own history.`,
    note:'<b>Data source:</b> CI runtime security agent (for example Harden-Runner) or runner audit logs. <b>Catches:</b> a build step doing something it has never done — fetching a remote script, launching an interpreter, reading process memory. <b>Why it works:</b> builds are highly repetitive, so they baseline unusually well; the literal gist host is historical, the behavioral diff is durable. <b>Tune:</b> build the per-workflow baseline first, then alert on additions.'},
   {lang:'shell',title:'Post-incident: hunt the leaked secrets in build logs',
