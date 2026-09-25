@@ -13,7 +13,7 @@
     --ink:#0C0F14; --panel:#131822; --panel-2:#19212C; --line:#28313E; --line-soft:#1E2631;
     --fg:#E7EDF4; --muted:#94A0B0; --muted-dim:#66717F; --amber:#E4A64E; --def:#57AECB; --atk:#E06A6A; --purple:#AD8CE6; --ok:#6CC08A;
     --supply:#E4A64E; --identity:#57AECB; --web:#E8894A; --cloud:#6CC08A; --endpoint:#AD8CE6; --edge:#E06A6A; --social:#E58AB8; --mobile:#6E9BE0; --ot:#9AA7B5; --dos:#C7B45E; --ai:#7FD1C3;
-    --radius:14px; --maxw:1000px;
+    --radius:14px; --maxw:1320px;
     box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
   }
   html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 100px); -webkit-text-size-adjust:100%;}
@@ -148,7 +148,7 @@
   /* shared library header — identical on every page (only max-width follows the page's .wrap).
      Fixed 41px tall (40px + border): sticky bars below sit at top:38px and scroll-padding assumes it. */
   .libnav{position:sticky; top:0; z-index:60; background:rgba(12,15,20,.94); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border-bottom:1px solid var(--line-soft);}
-  .libnav-in{max-width:1000px; height:40px; margin:0 auto; padding:0 20px; display:flex; gap:4px; align-items:center;}
+  .libnav-in{max-width:1320px; height:40px; margin:0 auto; padding:0 20px; display:flex; gap:4px; align-items:center;}
   .libnav a{flex:0 0 auto; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1; letter-spacing:.02em; color:var(--muted); text-decoration:none; border:none; padding:7px 11px; border-radius:6px; white-space:nowrap;}
   .libnav a:hover{color:var(--fg); background:var(--panel-2); border:none;}
   .libnav a:focus-visible{outline:2px solid var(--amber); outline-offset:-2px;}
