@@ -24,13 +24,13 @@
     },
     {
       "techniqueID": "T1190",
-      "score": 8,
-      "comment": "Seen in: #4 A log line that runs code; #5 Mass data theft through a file-transfer app; #7 SSRF to cloud credentials to the data lake; #11 Chaining two bugs on a VPN box; #16 Skipping a firewall’s admin login; #23 An API that never asked who was calling; #27 Inside the phone network; #30 Reading the server’s memory, 64KB at a time",
+      "score": 9,
+      "comment": "Seen in: #4 A log line that runs code; #5 Mass data theft through a file-transfer app; #7 SSRF to cloud credentials to the data lake; #11 Chaining two bugs on a VPN box; #15 Cryptojacking exposed containers; #16 Skipping a firewall’s admin login; #23 An API that never asked who was calling; #27 Inside the phone network; #30 Reading the server’s memory, 64KB at a time",
       "enabled": true,
       "metadata": [
         {
           "name": "examples",
-          "value": "8"
+          "value": "9"
         }
       ]
     },
@@ -62,18 +62,6 @@
       "techniqueID": "T1078.004",
       "score": 3,
       "comment": "Seen in: #6 MFA fatigue, then secrets in a script; #7 SSRF to cloud credentials to the data lake; #13 Password spray into OAuth abuse",
-      "enabled": true,
-      "metadata": [
-        {
-          "name": "examples",
-          "value": "3"
-        }
-      ]
-    },
-    {
-      "techniqueID": "T1133",
-      "score": 3,
-      "comment": "Seen in: #3 One leaked password, no second factor; #15 Cryptojacking exposed containers; #16 Skipping a firewall’s admin login",
       "enabled": true,
       "metadata": [
         {
@@ -170,6 +158,18 @@
       "techniqueID": "T1119",
       "score": 2,
       "comment": "Seen in: #23 An API that never asked who was calling; #26 14,000 stuffed logins, 6.9 million people exposed",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1133",
+      "score": 2,
+      "comment": "Seen in: #3 One leaked password, no second factor; #16 Skipping a firewall’s admin login",
       "enabled": true,
       "metadata": [
         {
@@ -587,6 +587,18 @@
       ]
     },
     {
+      "techniqueID": "T1543.003",
+      "score": 1,
+      "comment": "Seen in: #29 The worm that shut the hospitals",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
       "techniqueID": "T1550.001",
       "score": 1,
       "comment": "Seen in: #28 Signing a transaction that said something else",
@@ -662,6 +674,18 @@
       "techniqueID": "T1557",
       "score": 1,
       "comment": "Seen in: #25 The login page that was a proxy",
+      "enabled": true,
+      "metadata": [
+        {
+          "name": "examples",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "techniqueID": "T1562.001",
+      "score": 1,
+      "comment": "Seen in: #1 A poisoned software update",
       "enabled": true,
       "metadata": [
         {
