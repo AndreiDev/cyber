@@ -240,12 +240,10 @@
   .xf-r1.xf-bad{fill:var(--atk);}
   .xf-r2{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12.5px; fill:var(--fg); white-space:pre;}
   .xf-lane-flow{fill:none; stroke:var(--def); stroke-width:1.8; stroke-dasharray:5 9; opacity:0; transition:opacity .4s;}
-  .xf-open .xf-lane-flow{opacity:1; animation:xf-flow .8s linear infinite;}
+  .xf-open .xf-lane-flow{opacity:1;}
   .xf-flow-l{opacity:0; transition:opacity .4s;}
   .xf-open .xf-flow-l{opacity:1;}
-  @keyframes xf-flow{to{stroke-dashoffset:-14;}}
   .xf-track2{fill:none; stroke:var(--line); stroke-width:1.2; stroke-dasharray:2 5;}
-  @media (prefers-reduced-motion: reduce){ .xf-open .xf-lane-flow{animation:none;} }
   .xf-band{transition:fill-opacity .35s;}
   .xf-band.xf-hot{fill-opacity:.62!important;}
   .xf-band-l{font-family:"Space Grotesk",system-ui,sans-serif; font-weight:600; font-size:14.5px; fill:var(--fg);}
