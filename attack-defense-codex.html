@@ -2808,7 +2808,7 @@ const TermTips=(()=>{
     [/^containment$/i, /versus $/i, null],              // limiting a feature's blast radius by design, not the incident-response phase
     [/^hardening$/i, /Visibility and $/, null],        // the title of CISA's telecom guidance document
   ];
-  const SKIP_SEL='a,button,summary,pre,code,h1,h2,h3,h4,dt,.term,.attck,.schip,.kicker,.libnav,.controls,.nav,.glossary,.ft,.tt,.ct,.pn,.fn,.tn,.cs,.layer-h,.rtitle,.badge,.clang,.loop,.dk,.dt,.ds,.seg-h,.dl,.wl,.zt,.num,#termtip';
+  const SKIP_SEL='a,button,summary,pre,code,h1,h2,h3,h4,dt,.term,.attck,.schip,.kicker,.libnav,.controls,.nav,.glossary,.ft,.tt,.ct,.pn,.fn,.tn,.cs,.layer-h,.rtitle,.badge,.clang,.loop,.dk,.dt,.ds,.seg-h,.dl,.wl,.zt,.num,#termtip,svg,.xbar';
   const SCOPE_SEL='p,li,dd,td,.what,.row,.note,.dev,.terms,.log,.day,.a,.see,.eg';
   const OWNER_SEL='.cpt,.fc,.tac,.card,.prod,.track', TITLE_SEL='dt,.ft,.tt,.ct,.pn';
   let entries=[], rx=null, tip=null, shown=null, pinned=false, hideTimer=0;
