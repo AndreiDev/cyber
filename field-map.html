@@ -1069,7 +1069,8 @@ const XF = (() => {
       <p class="xf-sp-where"><span>Where it lives</span>${s.w}</p>
       <div class="xf-navbtns"><button type="button" class="xf-btn" data-d="-1">← Previous</button><button type="button" class="xf-btn" data-d="1">Next →</button></div>`;
   }
-  panel.addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (b) { x.settle((stageI + Number(b.dataset.d) + 8) % 8); x.pause(); } });
+  panel.addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (!b) return; const d = b.dataset.d;
+    x.settle((stageI + Number(d) + 8) % 8); x.pause(); panel.querySelector(`[data-d="${d}"]`)?.focus(); });
   x = explainer(host, {
     name: 'loop', bar: document.getElementById('xf-loop-bar'), captions: false, hold: 0, rest: api => api.settle(0),
     beats: STAGES.map((s, k) => ({dur: 4200, cap: s.k,
