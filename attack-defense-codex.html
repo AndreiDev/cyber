@@ -3006,7 +3006,8 @@ TermTips.init(GLOSS);
 // replays earlier beats with sc.instant = true, so every cue must leave the figure in its end state even
 // when no particle is drawn. Options: loops (passes before the figure rests, paused, on its finished frame;
 // endless by default) and scroller (the box that scrolls a wide figure sideways on a narrow screen), where a
-// beat's view [x0, x1] is what the camera pans to. A paused figure stays paused. The only global this block defines is XF.
+// beat's view [x0, x1] is what the camera pans to (a cue can also pan mid-beat, with sc.pan(view)). A paused figure stays paused.
+// The only global this block defines is XF.
 const XF = (() => {
   const NS = 'http://www.w3.org/2000/svg';
   const S = (tag, attrs = {}, ...kids) => {
@@ -3079,7 +3080,8 @@ const XF = (() => {
       const x = c ? (1 - q) * (1 - q) * a[0] + 2 * (1 - q) * q * c[0] + q * q * b[0] : a[0] + (b[0] - a[0]) * q;
       const y = c ? (1 - q) * (1 - q) * a[1] + 2 * (1 - q) * q * c[1] + q * q * b[1] : a[1] + (b[1] - a[1]) * q;
       at(p.el, x, y);
-      p.el.style.opacity = fade === 'ghost' ? Math.max(0, 1 - k * 1.7) : k < .12 ? k / .12 : k > .92 ? (1 - k) / .08 : 1;
+      // fade: 'ghost' fades away as it goes; 'in' or 'out' fades at that end only (the legs of a path through a waypoint); by default, both
+      p.el.style.opacity = fade === 'ghost' ? Math.max(0, 1 - k * 1.7) : k < .12 && fade !== 'out' ? k / .12 : k > .92 && fade !== 'in' ? (1 - k) / .08 : 1;
     }
     function updateParts(dt) {
       for (let j = parts.length - 1; j >= 0; j--) {
@@ -3089,9 +3091,13 @@ const XF = (() => {
     }
     function clearParts() { parts.length = 0; layer?.replaceChildren(); }
     // the camera: on a narrow screen the scroller shows part of the figure, so a beat with a view [x0, x1] (viewBox units) scrolls
-    // x0 to 16 px from the left. It stops for good once the reader touches the scroller (a wheel counts only when it moves sideways).
-    function pan(k) {
-      const v = B[k]?.view, svg = scroller?.querySelector('svg');
+    // x0 to 16 px from the left, and so does a cue's sc.pan(view) (never in instant mode). It stops for good once the reader shows
+    // sideways intent on the scroller: a sideways drag or wheel, or a mouse press (a scrollbar drag). A finger that lands on the
+    // figure to scroll the page does not count.
+    function pan(k) { panTo(B[k]?.view); }
+    sc.pan = v => { if (!sc.instant) panTo(v); };
+    function panTo(v) {
+      const svg = scroller?.querySelector('svg');
       if (!ready || !v || !svg || touched || scroller.scrollWidth <= scroller.clientWidth + 1) return;
       const vb = svg.viewBox.baseVal, r = svg.getBoundingClientRect(), s0 = scroller.getBoundingClientRect();
       const scale = vb && vb.width ? r.width / vb.width : 1, at0 = r.left - s0.left - scroller.clientLeft + scroller.scrollLeft;
@@ -3165,7 +3171,14 @@ const XF = (() => {
         document.removeEventListener('visibilitychange', kick); RM.removeEventListener?.('change', onRM);
         if (figs[cfg.name] === api) delete figs[cfg.name];
       }};
-    const TOUCH = ['pointerdown', 'touchstart', 'wheel'], onTouch = e => { if (e.type !== 'wheel' || e.deltaX !== 0) touched = true; };
+    let t0 = null;   // where the finger landed: a touch stops the camera only once it moves more sideways than down
+    const TOUCH = ['pointerdown', 'touchstart', 'touchmove', 'wheel'], onTouch = e => {
+      if (e.type === 'wheel') { if (e.deltaX !== 0) touched = true; return; }
+      if (e.type === 'pointerdown') { if (e.pointerType === 'mouse') touched = true; return; }
+      const f = e.touches?.[0]; if (!f) return;
+      if (e.type === 'touchstart') t0 = [f.clientX, f.clientY];
+      else if (t0 && Math.abs(f.clientX - t0[0]) > Math.abs(f.clientY - t0[1]) + 6) touched = true;
+    };
     TOUCH.forEach(n => scroller?.addEventListener(n, onTouch, {passive: true}));
     document.addEventListener('visibilitychange', kick);
     RM.addEventListener?.('change', onRM);
