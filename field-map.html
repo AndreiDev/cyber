@@ -237,9 +237,12 @@
   .xf-conn.xf-flag{stroke:var(--amber); stroke-width:2.6;}
   .xf-row rect{fill:var(--panel-2); stroke:var(--line-soft); transition:stroke .3s;}
   .xf-row.xf-flag rect{stroke:var(--amber); stroke-width:1.6;}
-  .xf-r1{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10px; letter-spacing:.1em; fill:var(--def);}
-  .xf-r1.xf-bad{fill:var(--atk);}
+  .xf-r1{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.1em; fill:var(--def);}
   .xf-r2{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12.5px; fill:var(--fg); white-space:pre;}
+  .xf-rule{fill:var(--muted-dim); transition:fill .3s;}
+  .xf-rule.xf-hot{fill:var(--amber);}
+  .xf-alert{transform:translateY(6px); transition:opacity .35s, transform .5s ease-out;}
+  .xf-alert.xf-on{transform:none;}
   .xf-lane-flow{fill:none; stroke:var(--def); stroke-width:1.8; stroke-dasharray:5 9; opacity:0; transition:opacity .4s;}
   .xf-open .xf-lane-flow{opacity:1;}
   .xf-flow-l{opacity:0; transition:opacity .4s;}
@@ -458,7 +461,7 @@ const FOUND=[
 const FOUND_FIGS={
  proc:{kick:'See it move · telemetry', title:'One process starts another',
   claim:'Every program start becomes an event with its parent attached. That parent is what gives an attack away.',
-  cap:'Process-creation events come from an EDR agent, from Sysmon (Event ID 1) or from Windows Security Event 4688. The address 203.0.113.7 is from a range reserved for documentation. On a phone this figure scrolls sideways.'},
+  cap:'The process-start rows carry the Windows Security event ID, 4688, which is written only if process auditing is switched on; an EDR agent or Sysmon (Event ID 1) records the same start, parent included, in its own format. The address 203.0.113.7 is from a range reserved for documentation. On a phone this figure scrolls sideways.'},
  login:{kick:'See it move · telemetry', title:'A remote login leaves two records',
   claim:'A login is a conversation between three machines, and two of them write it down. The SIEM puts the two records back together.',
   cap:'Event 4769 (a Kerberos service ticket was requested) is written on the domain controller; it is the same event the Kerberoasting card in the codex detects on. Event 4624 (a successful logon) is written on the server being logged in to. On a phone this figure scrolls sideways.'},
@@ -1292,53 +1295,67 @@ const XF = (() => {
 (() => {
   const {S, text, lines, SHAPES, explainer} = XF;
   const host = document.getElementById('xf-proc');
-  const svg = S('svg', {viewBox: '0 0 1000 440', role: 'img', 'aria-label': 'A process tree: explorer starts Outlook, Outlook starts Word, Word starts PowerShell, and PowerShell connects to a server on the internet; the EDR sends each start and the connection to the SIEM as an event, and a rule flags Word as the parent of PowerShell.'});
+  const svg = S('svg', {viewBox: '0 0 1000 440', role: 'img', 'aria-label': 'A process tree: explorer starts Outlook, and an administrator opens PowerShell from the Start menu, so explorer starts that PowerShell too; Outlook starts Word, Word starts a second PowerShell, and that one connects to a server on the internet. Each start and the connection reach the SIEM as events; nothing is flagged until a rule matches the one PowerShell whose parent is Word.'});
   svg.append(text(20, 22, 'LAPTOP · WS-042 · EDR AGENT RUNNING', 'xf-mono', {style: 'fill:var(--muted-dim)'}),
     S('rect', {x: 20, y: 34, width: 430, height: 392, rx: 12, style: 'fill:var(--ink);stroke:var(--line)'}),
-    text(600, 22, 'EDR · EVENTS SENT TO THE SIEM', 'xf-mono', {style: 'fill:var(--def)'}),
+    text(600, 22, 'PROCESS EVENTS · SENT TO THE SIEM', 'xf-mono', {style: 'fill:var(--def)'}),
     S('rect', {x: 600, y: 34, width: 380, height: 392, rx: 12, style: 'fill:var(--code-bg,#0A0E13);stroke:var(--line)'}));
-  const P = [['explorer.exe', 40, 64], ['outlook.exe', 80, 144], ['winword.exe', 120, 224], ['powershell.exe', 160, 304]];
-  const conns = P.slice(1).map(([, x, y], k) => { const [, px, py] = P[k];
+  // the tree, listed top to bottom as a process viewer shows it: [name, x, y, parent index]; the attacker's PowerShell is k = 3,
+  // the admin's (started from the Start menu, so its parent is explorer too) is k = 4
+  const P = [['explorer.exe', 40, 58], ['outlook.exe', 80, 128, 0], ['winword.exe', 120, 198, 1], ['powershell.exe', 160, 268, 2], ['powershell.exe', 80, 348, 0]];
+  const conns = P.slice(1).map(([, x, y, pk], k) => { const [, px, py] = P[pk];
     return S('path', {d: `M${px + 22} ${py + 34}V${y + 17}H${x}`, pathLength: 1, class: 'xf-conn' + (k === 2 ? ' xf-bad' : '')}); });
   const nodes = P.map(([n, x, y], k) => S('g', {class: 'xf-pnode' + (k ? '' : ' xf-on') + (k === 3 ? ' xf-bad' : '')},
     S('rect', {x, y, width: 168, height: 34, rx: 7}), text(x + 14, y + 22, n, 'xf-pname')));
+  nodes[4].append(text(94, 402, 'ADMIN · START MENU', 'xf-mono', {style: 'fill:var(--muted);font-size:10.5px'}));
   svg.append(...conns, ...nodes);
-  const net = S('path', {d: 'M328 321H514', pathLength: 1, class: 'xf-conn xf-bad'});
-  svg.append(net, S('g', {}, S('circle', {cx: 540, cy: 321, r: 24, style: 'fill:var(--panel-2);stroke:var(--muted-dim)'}),
-    S('ellipse', {cx: 540, cy: 321, rx: 10, ry: 24, style: 'fill:none;stroke:var(--muted-dim)'}),
-    S('line', {x1: 516, y1: 321, x2: 564, y2: 321, style: 'stroke:var(--muted-dim)'}),
-    text(540, 366, 'INTERNET', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--muted-dim);font-size:9.5px'}),
-    text(540, 284, '203.0.113.7', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--muted);font-size:10px'})));
-  const ROWS = [['4688 · PROCESS CREATED', 'outlook.exe    parent: explorer.exe'], ['4688 · PROCESS CREATED', 'winword.exe    parent: outlook.exe'],
-    ['4688 · PROCESS CREATED', 'powershell.exe parent: winword.exe', 1], ['NETWORK CONNECTION', 'powershell.exe → 203.0.113.7:443', 1]];
-  const rowY = k => 52 + k * 60;
-  const rows = ROWS.map(([a, b, bad], k) => S('g', {class: 'xf-row xf-show'}, S('rect', {x: 614, y: rowY(k), width: 352, height: 48, rx: 6}),
-    text(630, rowY(k) + 19, a, 'xf-r1' + (bad ? ' xf-bad' : '')), text(630, rowY(k) + 37, b, 'xf-r2')));
-  const alert = S('g', {class: 'xf-show'}, S('rect', {x: 614, y: 300, width: 352, height: 56, rx: 8, style: 'fill:rgba(228,166,78,.08);stroke:var(--amber);stroke-width:1.6'}),
-    text(630, 322, 'ALERT · ODD PARENT', 'xf-mono', {style: 'fill:var(--amber);font-size:10.5px'}),
-    text(630, 344, 'Word started PowerShell', 'xf-bt', {style: 'font-size:14px'}));
-  svg.append(...rows, alert,
-    lines(616, 388, ['RULE  parent is an Office app (Word, Excel, Outlook)', '      AND child is a shell (PowerShell, cmd)'], 16, 'xf-mono', {style: 'fill:var(--muted-dim);font-size:10px;letter-spacing:.02em;white-space:pre'}));
+  const net = S('path', {d: 'M328 285H501', pathLength: 1, class: 'xf-conn xf-bad'});
+  svg.append(net, S('g', {}, S('circle', {cx: 525, cy: 285, r: 24, style: 'fill:var(--panel-2);stroke:var(--muted-dim)'}),
+    S('ellipse', {cx: 525, cy: 285, rx: 10, ry: 24, style: 'fill:none;stroke:var(--muted-dim)'}),
+    S('line', {x1: 501, y1: 285, x2: 549, y2: 285, style: 'stroke:var(--muted-dim)'}),
+    text(525, 330, 'INTERNET', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--muted-dim);font-size:10.5px'}),
+    text(525, 248, '203.0.113.7', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--muted);font-size:10.5px'})));
+  // the event panel: five rows, all neutral until a rule has judged them; then the rule, and the alert it raises
+  const ROWS = [['4688 · PROCESS CREATED', 'outlook.exe    parent: explorer.exe'], ['4688 · PROCESS CREATED', 'powershell.exe parent: explorer.exe'],
+    ['4688 · PROCESS CREATED', 'winword.exe    parent: outlook.exe'], ['4688 · PROCESS CREATED', 'powershell.exe parent: winword.exe'],
+    ['EDR · NETWORK CONNECTION', 'powershell.exe → 203.0.113.7:443']];
+  const rowY = k => 48 + k * 50;
+  const rows = ROWS.map(([a, b], k) => S('g', {class: 'xf-row xf-show'}, S('rect', {x: 614, y: rowY(k), width: 352, height: 44, rx: 6}),
+    text(630, rowY(k) + 18, a, 'xf-r1'), text(630, rowY(k) + 35, b, 'xf-r2')));
+  const rule = lines(616, 316, ['RULE  parent is an Office app (Word, Excel, Outlook)', '      AND child is a shell (PowerShell, cmd)'], 16, 'xf-mono xf-rule',
+    {style: 'font-size:10.5px;letter-spacing:.02em;white-space:pre'});
+  const alert = S('g', {class: 'xf-show xf-alert'}, S('rect', {x: 614, y: 350, width: 352, height: 52, rx: 8, style: 'fill:rgba(228,166,78,.08);stroke:var(--amber);stroke-width:1.6'}),
+    text(630, 370, 'ALERT · ODD PARENT', 'xf-mono', {style: 'fill:var(--amber);font-size:10.5px'}),
+    text(630, 390, 'Word started PowerShell', 'xf-bt', {style: 'font-size:14px'}));
+  svg.append(...rows, rule, alert);
   const layer = S('g'); svg.append(layer);
   host.append(svg);
+  const odd = [conns[2], nodes[2], nodes[3]];   // the pair the rule is about: Word, the link, the PowerShell it started
   let netOpen = false, acc = 0;
   const grow = k => { conns[k - 1].classList.add('xf-on'); nodes[k].classList.add('xf-on'); };
-  const toRow = (k, from, c) => sc => sc.spawn({shape: SHAPES.pill(c), from, to: [632, rowY(k) + 24], ctrl: [(from[0] + 632) / 2, from[1] - 90], dur: 1300, onDone: () => rows[k].classList.add('xf-on')});
+  // each start (and the connection) becomes an event: a cyan pill, whoever caused it, because nothing has judged it yet
+  const toRow = (k, from, lift = 90) => sc => sc.spawn({shape: SHAPES.pill('def'), from, to: [632, rowY(k) + 22], ctrl: [(from[0] + 632) / 2, from[1] - lift], dur: 1300,
+    onDone: () => rows[k].classList.add('xf-on')});
+  const TREE = [0, 560];
   explainer(host, {
-    name: 'proc', bar: document.getElementById('xf-proc-bar'), layer, hold: 2200,
+    name: 'proc', bar: document.getElementById('xf-proc-bar'), layer, scroller: host, hold: 2200,
     reset() {
       netOpen = false; nodes.slice(1).forEach(n => n.classList.remove('xf-on')); [...conns, net].forEach(c => c.classList.remove('xf-on'));
-      [conns[2], nodes[2], nodes[3], rows[2]].forEach(e => e.classList.remove('xf-flag')); [...rows, alert].forEach(r => r.classList.remove('xf-on'));
+      [...odd, rows[3]].forEach(e => e.classList.remove('xf-flag')); [...rows, alert].forEach(r => r.classList.remove('xf-on')); rule.classList.remove('xf-hot');
     },
-    ambient(dt, sc) { if (netOpen && (acc += dt) > 600) { acc = 0; sc.spawn({shape: SHAPES.dot('atk', 3), from: [332, 321], to: [514, 321], dur: 850}); } },
+    ambient(dt, sc) { if (netOpen && (acc += dt) > 600) { acc = 0; sc.spawn({shape: SHAPES.dot('atk', 3), from: [332, 285], to: [499, 285], dur: 850}); } },
     beats: [
-      {dur: 3800, cap: 'Alice opens Outlook. Windows starts it as a child of explorer.exe, her desktop.', cues: [[.05, () => grow(1)], [.3, toRow(0, [248, 161], 'def')]]},
-      {dur: 3800, cap: 'She opens the attached document, so Outlook starts Word.', cues: [[.05, () => grow(2)], [.3, toRow(1, [288, 241], 'def')]]},
-      {dur: 4200, cap: 'A macro inside the document makes Word start PowerShell.', cues: [[.05, () => grow(3)], [.3, toRow(2, [328, 321], 'atk')]]},
-      {dur: 4400, cap: 'PowerShell opens a connection to a server on the internet. The EDR records that too.', cues: [
-        [.05, () => { net.classList.add('xf-on'); netOpen = true; }], [.35, toRow(3, [420, 321], 'atk')]]},
-      {dur: 5400, cap: 'A rule flags the odd pair: Word should never be the parent of PowerShell.', cues: [
-        [.05, () => [conns[2], nodes[2], nodes[3], rows[2]].forEach(e => e.classList.add('xf-flag'))], [.3, () => alert.classList.add('xf-on')]]},
+      {dur: 3800, view: TREE, cap: 'Alice opens Outlook. Windows starts it as a child of explorer.exe, her desktop.', cues: [[.05, () => grow(1)], [.3, toRow(0, [248, 145])]]},
+      {dur: 4600, view: TREE, cap: 'An admin opens PowerShell from the Start menu. Parent: explorer.exe. Nothing unusual, no alert.', cues: [
+        [.05, () => grow(4)], [.3, toRow(1, [248, 365])]]},
+      {dur: 3800, view: TREE, cap: 'Alice opens the attached document, so Outlook starts Word.', cues: [[.05, () => grow(2)], [.3, toRow(2, [288, 215])]]},
+      {dur: 4200, view: TREE, cap: 'A macro inside the document makes Word start PowerShell.', cues: [[.05, () => grow(3)], [.3, toRow(3, [328, 285])]]},
+      {dur: 4400, view: [320, 880], cap: 'PowerShell opens a connection to a server on the internet. The EDR records that too.', cues: [
+        [.05, () => { net.classList.add('xf-on'); netOpen = true; }], [.35, toRow(4, [420, 285], 130)]]},
+      // cause → effect: the rule lights, then the row it matched, then the alert it raises, then the pair in the tree
+      {dur: 5400, view: [600, 980], cap: 'A rule flags the odd pair. PowerShell on its own is everyday admin work; Word as its parent is not.', cues: [
+        [.05, sc => sc.flash(rule)], [.18, () => rows[3].classList.add('xf-flag')], [.3, () => alert.classList.add('xf-on')],
+        [.45, () => odd.forEach(e => e.classList.add('xf-flag'))]]},
     ],
   });
 })();
