@@ -974,7 +974,7 @@ const XF = (() => {
 
   function explainer(host, cfg) {
     const B = cfg.beats, layer = cfg.layer, scroller = cfg.scroller, parts = [], hold = cfg.hold ?? 1600, loops = cfg.loops ?? Infinity, sc = {instant: false};
-    let i = 0, t = 0, fired = 0, holdT = 0, passes = 0, userPaused = false, finished = false, touched = false, visible = false, started = false, raf = 0, last = 0, shownI = -1;
+    let i = 0, t = 0, fired = 0, holdT = 0, passes = 0, userPaused = false, finished = false, touched = false, ready = false, visible = false, started = false, raf = 0, last = 0, shownI = -1;
     let rm = RM.matches;   // mirrored from the change event: reading RM.matches every frame keeps Chromium's cache fresh, so 'change' never fires
     sc.spawn = o => {
       if (sc.instant || !layer) { o.onDone?.(); return null; }
@@ -1003,7 +1003,7 @@ const XF = (() => {
     // x0 to 16 px from the left. It stops for good once the reader touches the scroller.
     function pan(k) {
       const v = B[k]?.view, svg = scroller?.querySelector('svg');
-      if (!v || !svg || touched || scroller.scrollWidth <= scroller.clientWidth + 1) return;
+      if (!ready || !v || !svg || touched || scroller.scrollWidth <= scroller.clientWidth + 1) return;
       const vb = svg.viewBox.baseVal, r = svg.getBoundingClientRect(), s0 = scroller.getBoundingClientRect();
       const scale = vb && vb.width ? r.width / vb.width : 1, at0 = r.left - s0.left - scroller.clientLeft + scroller.scrollLeft;
       const left = Math.max(0, Math.min(scroller.scrollWidth - scroller.clientWidth, at0 + v[0] * scale - 16));
@@ -1078,7 +1078,7 @@ const XF = (() => {
     TOUCH.forEach(n => scroller?.addEventListener(n, onTouch, {passive: true}));
     document.addEventListener('visibilitychange', kick);
     RM.addEventListener?.('change', onRM);
-    updBtn(); rest();                         // complete at rest until it scrolls into view
+    updBtn(); rest(); ready = true;           // complete at rest until it scrolls into view (the camera stays put while building)
     io.observe(host);
     if (cfg.name) figs[cfg.name] = api;
     return api;
