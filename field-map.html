@@ -278,16 +278,21 @@
   .xf-stamp text{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:14px; font-weight:700;}
   .xf-stamp.xf-miss circle{stroke:var(--atk);} .xf-stamp.xf-miss text{fill:var(--atk);}
   .xf-stamp.xf-still circle{stroke:var(--ok);} .xf-stamp.xf-still text{fill:var(--ok);}
-  .xf-scroll > svg.xf-narrow{min-width:0; max-width:600px;}
+  .xf-scroll > svg.xf-narrow{min-width:0; max-width:640px;}
+  .xf-narrow .xf-colh{fill:var(--muted);}
   .xf-ctx{transition:opacity .4s;}
   .xf-ctx.xf-dim{opacity:.45;}
   .xf-bx.xf-hotc{stroke:var(--def)!important; stroke-width:2.6; stroke-opacity:1;}
+  .xf-bx.xf-hotg{stroke:var(--ok)!important; stroke-width:2.6; stroke-opacity:1;}
   .xf-show.xf-on.xf-held{opacity:.45;}
-  .xf-foot .xf-halo{fill:none; stroke:var(--atk); stroke-width:2; opacity:0; transform-box:fill-box; transform-origin:center;}
-  .xf-foot.xf-ping .xf-halo{animation:xf-halo 1s ease-out;}
+  .xf-foot.xf-on,.xf-case.xf-on{transition-duration:0s;}
+  .xf-show.xf-on.xf-held{transition-duration:.35s;}
+  .xf-foot .xf-halo,.xf-land .xf-halo{fill:none; stroke:var(--atk); stroke-width:2; opacity:0; transform-box:fill-box; transform-origin:center;}
+  .xf-land .xf-halo{stroke:var(--purple);}
+  .xf-foot.xf-ping .xf-halo,.xf-land.xf-ping .xf-halo{animation:xf-halo 1s ease-out;}
   .xf-iso-b{stroke-dashoffset:344; transition:stroke-dashoffset .6s ease .1s;}
   .xf-iso.xf-on .xf-iso-b{stroke-dashoffset:0;}
-  @media (prefers-reduced-motion: reduce){ .xf-ctx.xf-dim{opacity:1;} .xf-foot.xf-ping .xf-halo{animation:none;} }
+  @media (prefers-reduced-motion: reduce){ .xf-ctx.xf-dim{opacity:1;} .xf-foot.xf-ping .xf-halo,.xf-land.xf-ping .xf-halo{animation:none;} }
 </style>
 </head>
 <body>
@@ -390,7 +395,7 @@
     <h3>How actors are named and tracked</h3>
     <div class="prose">
       <p>Every vendor names groups differently, because each one sees only its own slice of the evidence (its own customers, its own sensors) and cannot be sure its cluster of activity is the same as a competitor’s. So one crew has many names. The group run by Russia’s SVR foreign-intelligence service is <b>APT29</b> (Mandiant), <b>Midnight Blizzard</b> (Microsoft; weather themes in which the family name gives the origin: "Blizzard" = Russia, "Typhoon" = China, "Sandstorm" = Iran, "Sleet" = North Korea, "Tempest" = financially motivated crime), <b>Cozy Bear</b> (CrowdStrike; animals, "Bear" = Russia, "Panda" = China, "Kitten" = Iran, "Chollima" = North Korea, "Spider" = criminal), <b>Nobelium</b> (Microsoft's older name) and <b>G0016</b> (MITRE ATT&CK’s group ID). Mandiant, now part of Google, numbered its groups: <b>APT</b> plus a number for state-backed espionage groups, <b>FIN</b> plus a number for financially motivated ones, and <b>UNC</b> ("uncategorized") plus a number (UNC5221, UNC5537) for a cluster of activity not yet tied to a known group. In July 2026 Google Threat Intelligence Group replaced the APT and FIN numbers with two-word names whose second word gives the category ("Relic" = Russia, "Castle" = China, "Ion" = Iran, "Neptune" = North Korea, "Comet" = cybercrime), so APT29 is now also <b>ICE RELIC</b>. UNC numbers remain for clusters still under investigation, and the old names stay searchable, so you will keep meeting APT29 in older reports and throughout this library. Vendors publish cross-reference tables; Microsoft and CrowdStrike began a joint mapping in 2025.</p>
-      <p>Attribution (working out who is behind an intrusion) clusters on <b>TTPs</b> (tactics, techniques, procedures: the actor's habits) more than on <b>IOCs</b> (indicators of compromise: specific hashes, IPs, domains), because habits are expensive to change. David Bianco's <b>Pyramid of Pain</b> makes this explicit: hash values are trivial for an attacker to change, IPs easy, domains simple, network and host artifacts annoying, tools challenging, and TTPs at the top are tough. That is the whole argument for behavior-based detection over indicator matching, and the reason the detection rules in the codex cards are written the way they are.</p>
+      <p>Attribution (working out who is behind an intrusion) clusters on <b>TTPs</b> (tactics, techniques, procedures: the actor's habits) more than on <b>IOCs</b> (indicators of compromise: specific hashes, IPs, domains), because habits are expensive to change. David Bianco's <b>Pyramid of Pain</b> makes this explicit: hash values are trivial for an attacker to change, IPs easy, domains simple, network and host artifacts (the traces a tool leaves by default, such as the named pipes it creates) annoying, tools challenging, and TTPs at the top are tough. That is the whole argument for behavior-based detection over indicator matching, and the reason the detection rules in the codex cards are written the way they are.</p>
     </div>
     <figure class="xf-fig" id="xf-pyramid-fig">
       <p class="xf-kick">See it move · the Pyramid of Pain</p>
@@ -398,7 +403,7 @@
       <p class="xf-claim">The longer the change takes, the more it costs them, and only a rule on the behavior itself survives all of them.</p>
       <div class="xf-scroll" id="xf-pyramid"></div>
       <div id="xf-pyramid-bar"></div>
-      <figcaption>David Bianco’s Pyramid of Pain, with one example from the codex at each level. A behavior rule can still be starved by pacing; that is what tuning and the decoy account in <a href="attack-defense-codex.html#ex10">card 10</a> are for. The replacement values are invented, and the IP addresses are from ranges reserved for documentation.</figcaption>
+      <figcaption>David Bianco’s Pyramid of Pain, with one example from the codex at each level. A behavior rule can still be starved by pacing; that is what tuning and the decoy account in <a href="attack-defense-codex.html#ex10">card 10</a> are for. The replacement values are invented, and the IP addresses are from ranges reserved for documentation. The bars rank the attacker’s time; they are not to scale.</figcaption>
     </figure>
   </section>
 
@@ -485,7 +490,7 @@ const FOUND_FIGS={
   cap:'The process-start rows carry the Windows Security event ID, 4688, which is written only if process auditing is switched on; an EDR agent or Sysmon (Event ID 1) records the same start, parent included, in its own format. The address 203.0.113.7 is from a range reserved for documentation. On a phone this figure scrolls sideways.'},
  login:{kick:'See it move · telemetry', title:'A remote login leaves two records',
   claim:'A login is a conversation between three machines. The two that grant it write it down, and the SIEM puts the two records back together.',
-  cap:'Event 4769 (a Kerberos service ticket was requested) is written on the domain controller, which logs the requesting machine by its IP address (the rows show names); it is the same event the Kerberoasting card in the codex detects on. Event 4624 (a successful logon) is written on the server being logged in to. For a Kerberos login like this one, Windows stamps both with the same Logon GUID, an ID the two records share, like a request ID that ties one request’s log lines together across services; the GUIDs are shortened and the times are illustrative. Lateral movement, an intruder reusing a stolen login to hop from machine to machine, leaves these same records, only between machines that do not normally talk; the SIEM knows WS-099 is new for alice because it keeps each account’s login history (a baseline, the UEBA idea in §04). On a phone this figure scrolls sideways.'},
+  cap:'Event 4769 (a Kerberos service ticket was requested) is written on the domain controller, which logs the requesting machine by its IP address (the rows show names); it is the same event the Kerberoasting card in the codex detects on. Event 4624 (a successful logon) is written on the server being logged in to. For a Kerberos login like this one, Windows stamps both with the same Logon GUID, an ID the two records share, like a request ID that ties one request’s log lines together across services; the GUIDs are shortened and the times are illustrative. Lateral movement, an intruder reusing a stolen login to hop from machine to machine, leaves these same records, only between machines that do not normally talk; the SIEM knows WS-099 is new for alice because it keeps each account’s login history (a baseline, the UEBA idea in the defensive stack (§04)). On a phone this figure scrolls sideways.'},
 };
 
 // ---------- 02 TACTICS ----------
@@ -1242,6 +1247,8 @@ const XF = (() => {
   const foot = S('g', {class: 'xf-show xf-foot'}, S('circle', {r: 7, class: 'xf-halo'}), SHAPES.dot('atk', 5)); at(foot, 284, 376);
   // the EDR's isolation: a green dashed outline that draws itself around the laptop (dashes counted in pathLength units)
   const DASH = Array(43).fill('5 3').join(' ') + ' 0 344';
+  // where the emulated attack lands (beat 8): the same halo ping as the attacker's landing, in the emulation's purple
+  const land = S('g', {class: 'xf-land'}, S('circle', {r: 7, class: 'xf-halo'})); at(land, 756, 386);
   const iso = S('g', {class: 'xf-show xf-iso'},
     S('path', {d: 'M246 346h76a8 8 0 0 1 8 8v64a8 8 0 0 1-8 8h-76a8 8 0 0 1-8-8v-64a8 8 0 0 1 8-8z', pathLength: 344, class: 'xf-iso-b',
       style: `fill:none;stroke:var(--ok);stroke-width:1.8;stroke-dasharray:${DASH}`}),
@@ -1250,7 +1257,7 @@ const XF = (() => {
   const kase = S('g', {class: 'xf-show xf-case'}, SHAPES.diamond('amber')); at(kase, 962, 42);
   const query = S('g', {class: 'xf-show xf-query'}, arrow(840, 86, 783, 135, 'def', {dash: '3 3', width: 1.4}),
     text(830, 124, 'QUERY', 'xf-mono', {style: 'fill:var(--def)'}));
-  svg.append(iso, foot, kase, query, ctx.prevent,
+  svg.append(iso, foot, land, kase, query, ctx.prevent,
     S('rect', {x: 186, y: 256, width: 14, height: 174, rx: 3, style: 'fill:url(#xf-hatch);stroke:var(--ok);stroke-opacity:.8'}),
     text(20, 282, 'ATTACKS', 'xf-mono', {style: 'fill:var(--atk)'}));
   [300, 326].forEach(y => svg.append(arrow(20, y, 182, y, 'atk', {head: false, width: 1}), S('line', {x1: 183, y1: y - 8, x2: 183, y2: y + 8, style: 'stroke:var(--atk);stroke-width:2.2'})));
@@ -1263,8 +1270,8 @@ const XF = (() => {
   let acc = 0, accF = 0, feed = 0, blocks = 0;
   const logBlock = () => { blocks++; logged.textContent = `${blocks} BLOCK${blocks > 1 ? 'S' : ''} LOGGED`; logged.classList.add('xf-on'); };
   // a stopped attack: it bursts on the wall, and the block itself becomes a log event that climbs into the SIEM
-  const blocked = (sc, y) => sc.spawn({shape: red(), from: [20, y], to: [180, y], dur: 1300, onDone: () => { sc.burst(180, y, 'atk');
-    sc.spawn({shape: SHAPES.pill('def'), from: [193, y], to: [252, 212], ctrl: [193, 214], dur: 1000, onDone: () => { logBlock(); sc.flash(R[0]); }}); }});
+  const blocked = (sc, y) => sc.spawn({shape: red(), from: [20, y], to: [180, y], dur: 1300, onDone: () => { sc.burst(180, y, 'ok');
+    sc.spawn({shape: SHAPES.pill('def'), from: [193, y], to: [252, 212], ctrl: [193, 214], dur: 1000, onDone: () => { logBlock(); sc.flash(R[0], 'xf-hotc'); }}); }});
   explainer(host, {
     name: 'stack', bar: document.getElementById('xf-stack-bar'), layer, scroller: host, hold: 2500,
     reset() {
@@ -1275,7 +1282,8 @@ const XF = (() => {
       if ((acc += dt) > 180) { acc = 0; const cx = 284 + Math.floor(Math.random() * 5) * 118;
         sc.spawn({shape: SHAPES.dot('def', 2.6), from: [cx, 258], to: [cx, 208], dur: 760}); }
       if ((accF += dt) > 2300) { accF = 0; const fx = feed++ % 2 ? 490 : 310;
-        sc.spawn({shape: SHAPES.dot('amber', 2.6), from: [fx, 88], to: [fx, 136], dur: 700}); }
+        const d = SHAPES.dot('amber', 2.6); if (ctx.feeds.classList.contains('xf-dim')) d.style.fillOpacity = '.45';   // dimmed with the FEEDS group
+        sc.spawn({shape: d, from: [fx, 88], to: [fx, 136], dur: 700}); }
     },
     beats: [
       {dur: 3000, view: [0, 820], cap: 'Sensors on every layer stream telemetry into the SIEM, all day long.', cues: [[0, () => focus(...ALL)]]},
@@ -1287,25 +1295,25 @@ const XF = (() => {
           foot.classList.add('xf-on'); sc.flash(foot, 'xf-ping'); sc.flash(edr, 'xf-hotc'); }})]]},
       {dur: 4600, view: [0, 820], cap: 'The EDR records it (its own detections may fire too), and that event climbs to the SIEM along with everything else.', cues: [
         [0, () => focus()], [.05, sc => sc.flash(edr, 'xf-hotc')],
-        [.1, sc => sc.spawn({shape: SHAPES.pill('amber'), from: [284, 256], to: [284, 214], dur: 1300, onDone: () => sc.flash(R[0])})]]},
+        [.1, sc => sc.spawn({shape: SHAPES.pill('def'), from: [284, 256], to: [284, 214], dur: 1300, onDone: () => sc.flash(R[0], 'xf-hotc')})]]},
       {dur: 3800, view: [560, 1000], cap: 'A detection rule matches that event, and the SIEM raises an alert.', cues: [
         [0, () => focus()], [.05, sc => { match.classList.add('xf-on'); sc.flash(R[0]); }],
         [.35, sc => sc.spawn({shape: SHAPES.diamond('amber'), from: [680, 138], to: [680, 88], dur: 1000, onDone: () => sc.flash(R[1])})]]},
       {dur: 5000, view: [250, 810], cap: 'SOAR runs the playbook: it tells the EDR to cut the laptop off the network, and hands the case to an analyst.', cues: [
         [0, () => focus()],
         // SOAR → EDR (the order), then EDR → laptop (the EDR agent does the isolating)
-        [.05, sc => sc.spawn({shape: SHAPES.dot('ok', 4.5), from: [680, 86], to: [284, 262], ctrl: [430, 120], dur: 1300, onDone: () => { sc.flash(edr);
+        [.05, sc => sc.spawn({shape: SHAPES.dot('ok', 4.5), from: [680, 86], to: [284, 262], ctrl: [430, 120], dur: 1300, onDone: () => { sc.flash(edr, 'xf-hotg');
           sc.spawn({shape: SHAPES.dot('ok', 4.5), from: [284, 316], to: [284, 350], dur: 500, onDone: () => { iso.classList.add('xf-on'); foot.classList.add('xf-held'); }}); }})],
         [.5, sc => sc.spawn({shape: SHAPES.diamond('amber'), from: [690, 54], to: [962, 42], ctrl: [826, 0], dur: 1300, onDone: () => { kase.classList.add('xf-on'); sc.flash(R[2]); }})]]},
       {dur: 4600, view: [560, 1000], cap: 'The analyst pivots: one query pulls everything that laptop and that account did around the alert.', cues: [
         [0, () => focus()],
         [.05, sc => sc.spawn({shape: SHAPES.dot('def', 4.5), from: [840, 86], to: [783, 135], dur: 900, onDone: () => {
-          query.classList.add('xf-on'); sc.flash(R[0]); sc.flash(edr, 'xf-hotc'); sc.flash(idn, 'xf-hotc'); }})],
+          query.classList.add('xf-on'); sc.flash(R[0], 'xf-hotc'); sc.flash(edr, 'xf-hotc'); sc.flash(idn, 'xf-hotc'); }})],
         [.5, sc => sc.spawn({shape: SHAPES.pill('def'), from: [783, 135], to: [840, 86], dur: 1000, onDone: () => sc.flash(R[2])})]]},
       {dur: 4800, view: [560, 1000], cap: 'Meanwhile, breach-and-attack simulation replays attacks on purpose, to prove all of this still works.', cues: [
         [0, () => focus(...ALL)],
         [.05, sc => sc.spawn({shape: SHAPES.dot('purple', 5), from: [990, 386], to: [756, 386], dur: 1500, onDone: () => {
-          sc.burst(756, 386, 'purple'); sc.flash(waf, 'xf-hotc');
+          sc.flash(land, 'xf-ping'); sc.flash(waf, 'xf-hotc');
           sc.spawn({shape: SHAPES.pill('purple'), from: [756, 256], to: [756, 214], dur: 1100,
             onDone: () => { tested.classList.add('xf-on'); sc.flash(R[0], 'xf-hotp'); }}); }})]]},
     ],
@@ -1476,7 +1484,7 @@ const XF = (() => {
 })();
 
 // ---------- figure: the Pyramid of Pain, climbed (§06) ----------
-// Two geometries, like the codex rail: the pyramid with its description column, and below a 720 px container one row per
+// Two geometries, like the codex rail: the pyramid with its description column, and below a 900 px container one row per
 // level (the narration carries the descriptions). A resize across the breakpoint rebuilds the figure and keeps a pause.
 (() => {
   const {S, text, lines, wrap, explainer} = XF;
@@ -1557,7 +1565,7 @@ const XF = (() => {
   // a value scrambles in its own alphabet: hex stays hex, digits digits, letters letters of the same case; separators keep their place
   const scramble = v => { const hex = /^[0-9a-f…]+$/.test(v);
     return [...v].map(c => hex && HEX.includes(c) ? pick(HEX) : DIG.includes(c) ? pick(DIG) : LOW.includes(c) ? pick(LOW) : UP.includes(c) ? pick(UP) : c).join(''); };
-  let narrowNow = host.clientWidth < 720, inst = null;
+  let narrowNow = host.clientWidth < 900, inst = null;
   function build() {
     const wasPaused = inst?.state().paused;   // a rebuild (a resize across the breakpoint) keeps the reader's pause
     inst?.destroy();
@@ -1587,7 +1595,7 @@ const XF = (() => {
   // the rebuild runs just after the observer's callback: rebuilding inside it changes the host's height, which Chrome reports as
   // an error ("ResizeObserver loop completed with undelivered notifications")
   let later = 0;
-  new ResizeObserver(([en]) => { if (en.contentRect.width === 0) return; const v = en.contentRect.width < 720;
+  new ResizeObserver(([en]) => { if (en.contentRect.width === 0) return; const v = en.contentRect.width < 900;
     if (v !== narrowNow) { narrowNow = v; clearTimeout(later); later = setTimeout(build); } }).observe(host);
 })();
 
