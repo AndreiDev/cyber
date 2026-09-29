@@ -160,7 +160,7 @@
   .xf-fig figcaption{font-size:.84rem; color:var(--muted-dim); margin-top:12px; max-width:84ch; text-wrap:pretty;}
   .xf-kick{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--amber); margin:0 0 4px;}
   .xf-h{font-family:"Space Grotesk",system-ui,sans-serif; font-weight:600; font-size:1.2rem; letter-spacing:-.01em; line-height:1.2; margin:0 0 6px;}
-  .xf-claim{font-size:.92rem; color:var(--muted); margin:0 0 14px; max-width:78ch;}
+  .xf-claim{font-size:.92rem; color:var(--muted); margin:0 0 14px; max-width:78ch; text-wrap:pretty;}
   .xf-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch;}
   .xf-scroll > svg{min-width:720px;}
   .xf-mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.1em;}
@@ -896,7 +896,7 @@ const TERMS=[
 ["SPF / DKIM","See DMARC / DKIM / SPF."],
 ["SPN","Service Principal Name: the name under which a service is registered in Active Directory, tying it to the account it runs as. Any domain user may request a Kerberos ticket for any SPN, which is the hook Kerberoasting exploits."],
 ["Spyware","Software that covertly collects a device’s messages, calls, location, microphone and camera. Commercial or “mercenary” spyware such as NSO Group’s Pegasus is sold to governments and delivered with expensive zero-click exploits against chosen individuals (case 18)."],
-["SQL injection (SQLi)","User input ends up inside a database query as code instead of data, letting the attacker read or change the database and sometimes run commands. Prevented by parameterised queries; the flaw behind MOVEit (case 5)."],
+["SQL injection (SQLi)","User input ends up inside a database query as code instead of data, letting the attacker read or change the database and sometimes run commands. Prevented by parameterized queries; the flaw behind MOVEit (case 5)."],
 ["SRI (Subresource Integrity)","A browser feature: the HTML tag that loads a script carries the script’s expected hash, and the browser refuses the file if it does not match. It protects against a tampered CDN or third-party host, but not when the attacker can change the HTML that carries the hash as well (case 28)."],
 ["SSO","Single Sign-On: you log in once to an identity provider, which then vouches for you to every connected application. Convenient, and it concentrates risk: one compromised identity unlocks everything."],
 ["SSPM","SaaS Security Posture Management: audits SaaS configuration and risky OAuth apps."],
@@ -909,7 +909,7 @@ const TERMS=[
 ["TGS / TGT","Ticket-granting service / ticket-granting ticket. See Kerberos."],
 ["Threat hunting","Proactively searching your own telemetry for intruders that no alert has flagged, starting from a hypothesis (“if someone were Kerberoasting us, what would the logs show?”). A successful hunt usually ends as a new detection rule."],
 ["Threat intelligence","Organized knowledge about attackers: who is active, what they target, their tools, infrastructure and behavior (TTPs), plus indicators to search for. Published by vendors and governments; its practical use is deciding which detections and patches to prioritize."],
-["Threat-actor names","Each security vendor names the groups it tracks, so one group has several names. Mandiant numbers them (APT29) and uses UNCnnnn for an “uncategorised” cluster of activity not yet tied to a known group. Microsoft uses a weather word per sponsor (Blizzard for Russia, Typhoon for China, Sleet for North Korea, Tempest for financially motivated criminals) and Storm-nnnn for a group still being characterized. CrowdStrike uses an animal (Bear for Russia, Panda for China, Spider for criminals). So APT29, Midnight Blizzard and Cozy Bear are the same people."],
+["Threat-actor names","Each security vendor names the groups it tracks, so one group has several names. Mandiant numbers them (APT29) and uses UNCnnnn for an “uncategorized” cluster of activity not yet tied to a known group. Microsoft uses a weather word per sponsor (Blizzard for Russia, Typhoon for China, Sleet for North Korea, Tempest for financially motivated criminals) and Storm-nnnn for a group still being characterized. CrowdStrike uses an animal (Bear for Russia, Panda for China, Spider for criminals). So APT29, Midnight Blizzard and Cozy Bear are the same people."],
 ["Tiered administration","Using domain-admin credentials only on domain controllers, server-admin credentials only on servers, and so on, so that compromising a lower tier never exposes higher-tier credentials."],
 ["TLS","Transport Layer Security, the encryption behind HTTPS. OpenSSL is the most widely used implementation, which is why one bug in it (Heartbleed) affected much of the web."],
 ["Token","A string that stands in for a login: whoever presents it is treated as the identity it was issued to, with no password or MFA asked again. See Session cookie / token, OAuth, PAT, and Access key (cloud)."],
@@ -950,10 +950,12 @@ $('nums-g').innerHTML=NUMS.map(n=>`<div class="num"><div class="v">${n[0]}</div>
 $('tracks-g').innerHTML=TRACKS.map(t=>`<div class="track" style="--c:${t[0]}"><p class="tt">${t[1]}</p><p>${t[2]}</p></div>`).join('');
 
 /* ---------- explainer (duplicated verbatim in the Field Map and the Codex) ---------- */
-// Self-playing, narrated SVG figures. A figure is a list of beats {dur, cap, cues:[[p, fn]], tick(p, sc)}:
+// Self-playing, narrated SVG figures. A figure is a list of beats {dur, cap, view, cues:[[p, fn]], tick(p, sc)}:
 // cues fire once as the beat's progress passes p, and moving things are particles (sc.spawn). Seeking
 // replays earlier beats with sc.instant = true, so every cue must leave the figure in its end state even
-// when no particle is drawn. The only global this block defines is XF.
+// when no particle is drawn. Options: loops (passes before the figure rests, paused, on its finished frame;
+// endless by default) and scroller (the box that scrolls a wide figure sideways on a narrow screen), where a
+// beat's view [x0, x1] is what the camera pans to. A paused figure stays paused. The only global this block defines is XF.
 const XF = (() => {
   const NS = 'http://www.w3.org/2000/svg';
   const S = (tag, attrs = {}, ...kids) => {
@@ -995,8 +997,6 @@ const XF = (() => {
       S('line', {x1: -8, y1: -2.5, x2: 8, y2: -2.5, style: `stroke:${col(c)};stroke-width:1.5`}),
       S('line', {x1: -8, y1: 2.5, x2: 3, y2: 2.5, style: `stroke:${col(c)};stroke-width:1.5;stroke-opacity:.6`})),
     diamond: c => S('path', {d: 'M0-8L8 0L0 8L-8 0Z', style: `fill:${col(c)}`, filter: 'url(#xf-glow)'}),
-    ticket: c => S('g', {}, S('rect', {x: -26, y: -10, width: 52, height: 20, rx: 5, style: `fill:${DEEP};stroke:${col(c)};stroke-width:1.5`}),
-      S('text', {x: 0, y: 3.5, 'text-anchor': 'middle', class: 'xf-mono', style: `fill:${col(c)};font-size:8.5px;letter-spacing:.14em`}, 'TICKET')),
   };
   const PLAY_I = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg>';
   const PAUSE_I = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1h2.2v8H2zM5.8 1H8v8H5.8z"/></svg>';
@@ -1038,14 +1038,14 @@ const XF = (() => {
     }
     function clearParts() { parts.length = 0; layer?.replaceChildren(); }
     // the camera: on a narrow screen the scroller shows part of the figure, so a beat with a view [x0, x1] (viewBox units) scrolls
-    // x0 to 16 px from the left. It stops for good once the reader touches the scroller.
+    // x0 to 16 px from the left. It stops for good once the reader touches the scroller (a wheel counts only when it moves sideways).
     function pan(k) {
       const v = B[k]?.view, svg = scroller?.querySelector('svg');
       if (!ready || !v || !svg || touched || scroller.scrollWidth <= scroller.clientWidth + 1) return;
       const vb = svg.viewBox.baseVal, r = svg.getBoundingClientRect(), s0 = scroller.getBoundingClientRect();
       const scale = vb && vb.width ? r.width / vb.width : 1, at0 = r.left - s0.left - scroller.clientLeft + scroller.scrollLeft;
       const left = Math.max(0, Math.min(scroller.scrollWidth - scroller.clientWidth, at0 + v[0] * scale - 16));
-      scroller.scrollTo({left, behavior: rm ? 'auto' : 'smooth'});
+      scroller.scrollTo({left, behavior: rm ? 'instant' : 'smooth'});
     }
     function fire(b, p) { const cs = b.cues || []; while (fired < cs.length && cs[fired][0] <= p) cs[fired++][1](sc); }
     function goTo(k) {
@@ -1098,7 +1098,9 @@ const XF = (() => {
       if (k !== shownI) { shownI = k; cap.textContent = B[k].cap || ''; }
     }
     const rest = () => (cfg.rest ? cfg.rest(api) : settle(B.length - 1));
-    const onRM = e => { rm = e.matches; if (rm) rest(); updBtn(); kick(); };
+    const onRM = e => { rm = e.matches;
+      if (rm) { rest(); if (userPaused && passes >= loops) finished = true; }   // rest() replays to the frame; a finished figure stays finished
+      updBtn(); kick(); };
     const io = new IntersectionObserver(es => { const e = es[es.length - 1];
       onVis(e.isIntersecting && (e.intersectionRatio >= .29 || e.intersectionRect.height >= innerHeight * .5)); }, {threshold: [0, .3]});
     const api = {sc, settle, goTo,
@@ -1112,11 +1114,13 @@ const XF = (() => {
         document.removeEventListener('visibilitychange', kick); RM.removeEventListener?.('change', onRM);
         if (figs[cfg.name] === api) delete figs[cfg.name];
       }};
-    const TOUCH = ['pointerdown', 'touchstart', 'wheel'], onTouch = () => { touched = true; };
+    const TOUCH = ['pointerdown', 'touchstart', 'wheel'], onTouch = e => { if (e.type !== 'wheel' || e.deltaX !== 0) touched = true; };
     TOUCH.forEach(n => scroller?.addEventListener(n, onTouch, {passive: true}));
     document.addEventListener('visibilitychange', kick);
     RM.addEventListener?.('change', onRM);
-    updBtn(); rest(); ready = true;           // complete at rest until it scrolls into view (the camera stays put while building)
+    // complete at rest until it scrolls into view. The camera stays put while building, except under reduced motion: that reader
+    // never sees the figure play, so it jumps to the finished frame's view at once
+    updBtn(); ready = rm; rest(); ready = true;
     io.observe(host);
     if (cfg.name) figs[cfg.name] = api;
     return api;
@@ -1309,7 +1313,7 @@ const XF = (() => {
         [0, () => focus()],
         [.05, sc => sc.spawn({shape: SHAPES.dot('def', 4.5), from: [840, 86], to: [783, 135], dur: 900, onDone: () => {
           query.classList.add('xf-on'); sc.flash(R[0], 'xf-hotc'); sc.flash(edr, 'xf-hotc'); sc.flash(idn, 'xf-hotc'); }})],
-        [.5, sc => sc.spawn({shape: SHAPES.pill('def'), from: [783, 135], to: [840, 86], dur: 1000, onDone: () => sc.flash(R[2])})]]},
+        [.5, sc => sc.spawn({shape: SHAPES.pill('def'), from: [783, 135], to: [840, 86], dur: 1000, onDone: () => sc.flash(R[2], 'xf-hotc')})]]},   // results are logs: cyan
       {dur: 4800, view: [560, 1000], cap: 'Meanwhile, breach-and-attack simulation replays attacks on purpose, to prove all of this still works.', cues: [
         [0, () => focus(...ALL)],
         [.05, sc => sc.spawn({shape: SHAPES.dot('purple', 5), from: [990, 386], to: [756, 386], dur: 1500, onDone: () => {
@@ -1485,7 +1489,8 @@ const XF = (() => {
 
 // ---------- figure: the Pyramid of Pain, climbed (§06) ----------
 // Two geometries, like the codex rail: the pyramid with its description column, and below a 900 px container one row per
-// level (the narration carries the descriptions). A resize across the breakpoint rebuilds the figure and keeps a pause.
+// level (the narration carries the descriptions). A resize across the breakpoint rebuilds the figure and keeps a pause,
+// on the beat the reader paused on.
 (() => {
   const {S, text, lines, wrap, explainer} = XF;
   const host = document.getElementById('xf-pyramid'), bar = document.getElementById('xf-pyramid-bar');
@@ -1567,7 +1572,7 @@ const XF = (() => {
     return [...v].map(c => hex && HEX.includes(c) ? pick(HEX) : DIG.includes(c) ? pick(DIG) : LOW.includes(c) ? pick(LOW) : UP.includes(c) ? pick(UP) : c).join(''); };
   let narrowNow = host.clientWidth < 900, inst = null;
   function build() {
-    const wasPaused = inst?.state().paused;   // a rebuild (a resize across the breakpoint) keeps the reader's pause
+    const was = inst?.state();   // a rebuild (a resize across the breakpoint) keeps the reader's pause, and their beat
     inst?.destroy();
     const G = narrowNow ? narrow() : wide(), R = G.rows;
     host.replaceChildren(G.svg);
@@ -1589,7 +1594,7 @@ const XF = (() => {
           if (ms >= PAIN[k] + 150 || sc.instant) setStamp(k, v);
         }})),
     });
-    if (wasPaused) inst.pause();
+    if (was?.paused) { if (was.started) inst.settle(Math.min(was.beat, L.length - 1)); inst.pause(); }   // one beat per level; it never finishes
   }
   build();
   // the rebuild runs just after the observer's callback: rebuilding inside it changes the host's height, which Chrome reports as
