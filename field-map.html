@@ -120,10 +120,6 @@
 
   .close{margin-top:52px; padding:26px; border:1px solid var(--line); border-radius:var(--radius); background:linear-gradient(160deg,var(--panel),#10151d);}
   .close h2{font-size:1.3rem; margin:0 0 10px;} .close p{margin:0 0 10px; color:var(--muted);}
-  .flow{display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:14px 0;}
-  .flow span{font-family:"IBM Plex Mono",monospace; font-size:11px; border:1px solid var(--line); border-radius:20px; padding:5px 12px;}
-  .flow .ar{border:none; color:var(--muted-dim); padding:5px 2px;}
-  .flow .r{color:var(--atk); border-color:rgba(224,106,106,.4);} .flow .b{color:var(--def); border-color:rgba(87,174,203,.4);} .flow .p{color:var(--purple); border-color:rgba(173,140,230,.4);}
   .tracks{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; margin-top:14px;}
   .track{border:1px solid var(--line-soft); border-radius:10px; padding:12px 14px; background:var(--panel-2); border-left:3px solid var(--c,var(--muted));}
   .track .tt{font-weight:600; font-size:.92rem; margin:0 0 4px;} .track p{font-size:.82rem; color:var(--muted); margin:0;}
@@ -196,6 +192,37 @@
   @media (max-width:640px){ .xbar{flex-wrap:wrap;} .xcap{flex-basis:100%;} }
   @media (prefers-reduced-motion: reduce){ .xf-fig *,.xf-rail *,.xbar *{transition:none!important;} .xf-burst{display:none;} }
   /* ---------- /explainer ---------- */
+  /* ---------- figures (this page only) ---------- */
+  .xf-loop-grid{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:28px; align-items:center;}
+  @media (max-width:860px){ .xf-loop-grid{grid-template-columns:1fr;} }
+  .xf-track{fill:none; stroke:var(--line-soft); stroke-width:1;}
+  .xf-seg{fill:none; stroke-width:3; stroke-opacity:.55; stroke-linecap:round;}
+  .xf-sector{font-size:10.5px; letter-spacing:.18em; opacity:.8;}
+  .xf-trail{fill:none; stroke:url(#xf-trail-g); stroke-width:5; stroke-linecap:round;}
+  .xf-packet{fill:var(--atk); transition:fill .5s;}
+  .xf-node{cursor:pointer;}
+  .xf-node:focus{outline:none;}
+  .xf-node .xf-disc{fill:var(--ink); stroke:var(--c); stroke-width:2; transition:fill .3s;}
+  .xf-node .xf-dot{fill:var(--c); transition:fill .3s;}
+  .xf-node .xf-halo{fill:none; stroke:var(--c); stroke-width:2; opacity:0; transform-box:fill-box; transform-origin:center;}
+  .xf-node.xf-ping .xf-halo{animation:xf-halo 1.3s ease-out;}
+  @keyframes xf-halo{from{opacity:.9; transform:scale(1);} to{opacity:0; transform:scale(3.4);}}
+  .xf-node.xf-on .xf-disc{fill:var(--c);}
+  .xf-node.xf-on .xf-dot{fill:var(--ink);}
+  .xf-nlabel{font-family:"Space Grotesk",system-ui,sans-serif; font-size:16px; font-weight:500; fill:var(--muted); transition:fill .3s;}
+  .xf-nnum{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; fill:var(--muted-dim);}
+  .xf-node:hover .xf-nlabel,.xf-node.xf-on .xf-nlabel{fill:var(--fg);}
+  .xf-node:focus-visible .xf-disc{stroke:var(--amber); stroke-width:3.5;}
+  .xf-stage{border-left:3px solid var(--c,var(--line)); padding:6px 0 6px 20px; transition:border-color .4s;}
+  .xf-stage .xf-sp-k{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--c); margin:0 0 6px;}
+  .xf-stage h3{font-family:"Space Grotesk",system-ui,sans-serif; font-weight:600; font-size:1.7rem; letter-spacing:-.015em; margin:0 0 10px; line-height:1.1;}
+  .xf-stage p{margin:0 0 12px; color:var(--fg);}
+  .xf-stage p.xf-sp-where{font-size:.9rem; color:var(--muted);}
+  .xf-sp-where span{display:block; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-dim); margin-bottom:2px;}
+  .xf-navbtns{display:flex; gap:8px; margin-top:16px;}
+  .xf-btn{background:none; border:1px solid var(--line); color:var(--muted); font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.05em; padding:6px 12px; border-radius:7px; cursor:pointer;}
+  .xf-btn:hover,.xf-btn:focus-visible{color:var(--fg); border-color:var(--muted-dim); outline:none;}
+  @media (prefers-reduced-motion: reduce){ .xf-node.xf-ping .xf-halo{animation:none;} }
 </style>
 </head>
 <body>
@@ -312,9 +339,10 @@
   <section id="loop" class="close">
     <h2>How it all connects — the loop</h2>
     <p>None of these layers stands alone. They form one continuous cycle, and every part of this library covers a different stretch of it:</p>
-    <div class="flow">
-      <span class="r">Attack</span><span class="ar">→</span><span class="b">Telemetry</span><span class="ar">→</span><span class="b">Detection</span><span class="ar">→</span><span class="b">Investigate</span><span class="ar">→</span><span class="b">Respond</span><span class="ar">→</span><span class="p">Emulate</span><span class="ar">→</span><span class="p">Find the gap</span><span class="ar">→</span><span class="b">New detection</span><span class="ar">↻</span>
-    </div>
+    <figure class="xf-fig" id="xf-loop-fig">
+      <div class="xf-loop-grid"><div id="xf-loop"></div><div class="xf-stage" id="xf-stage"></div></div>
+      <div id="xf-loop-bar"></div>
+    </figure>
     <p>An <b>attacker</b> moves through the lifecycle across a <b>surface</b>; the <b>defensive stack</b> emits telemetry; a <b>SOC or detection engineer</b> turns telemetry into an alert, investigates, and responds; a <b>red or purple team</b> emulates the attack to find what was missed; the gap becomes the next <b>detection</b>. Round and round.</p>
     <p><b>Where the rest of the library sits:</b> this field map stands alone as the board. Everything else lives inside the <a href="attack-defense-codex.html">codex</a>’s thirty cases: each card is Attack and Respond from both chairs, and carries its own Detection rules. Two cards hold a full worked method: <a href="attack-defense-codex.html#blue-loop">case 10</a> builds one detection end to end (Telemetry → Detection → Respond, the blue loop), and <a href="attack-defense-codex.html#red-loop">case 12</a> runs Emulate → Find the gap (the red loop).</p>
     <h3 style="margin-top:22px;">Suggested reading tracks through the codex</h3>
@@ -977,6 +1005,78 @@ const XF = (() => {
   return {S, col, text, lines, wrap, arrow, box, wire, RM, ease, clamp, seg, at, DEEP, SHAPES, explainer, figs};
 })();
 /* ---------- /explainer ---------- */
+
+// ---------- figure: the loop as a ring (§09) ----------
+(() => {
+  const {S, col, text, wire, ease, seg, explainer} = XF;
+  const STAGES = [
+    {k: 'Attack', c: 'atk', grp: 'Offense', t: 'An attacker moves through the stages of an intrusion, from the first way in to the damage, on one of the eleven attack surfaces.',
+     w: '<a href="#anatomy">Anatomy of a breach</a> and <a href="#surfaces">Attack surfaces</a> on this page, and the attack chain in every codex card'},
+    {k: 'Telemetry', c: 'def', grp: 'Defense', t: 'Every step leaves a trace: a login event, a new process, a DNS lookup, a cloud API call. Sensors record it.',
+     w: '<a href="#foundations">Foundations</a> (Telemetry) and <a href="#stack">the defensive stack</a> on this page, and the trace on every chain step'},
+    {k: 'Detection', c: 'def', grp: 'Defense', t: 'Rules in the SIEM pick out the abnormal traces and raise an alert.',
+     w: '“Detection in practice” in every <a href="attack-defense-codex.html">codex card</a>'},
+    {k: 'Investigate', c: 'def', grp: 'Defense', t: 'An analyst works out what happened: which machines, which accounts, since when.',
+     w: 'The Investigation block of every <a href="attack-defense-codex.html">codex card</a>'},
+    {k: 'Respond', c: 'def', grp: 'Defense', t: 'Contain the intrusion, remove the attacker, recover, and close the way they came in.',
+     w: 'The Response and Hardening blocks of every <a href="attack-defense-codex.html">codex card</a>'},
+    {k: 'Emulate', c: 'purple', grp: 'Purple team', t: 'A red or purple team replays the attacker’s techniques on purpose, with permission, to test the defenses.',
+     w: '<a href="attack-defense-codex.html#red-loop">Card 12, the red / purple loop</a>'},
+    {k: 'Find the gap', c: 'purple', grp: 'Purple team', t: 'Whatever the emulation did that no rule caught is a gap in coverage.',
+     w: '<a href="attack-defense-codex.html#red-loop">Card 12</a>, “Measure coverage”'},
+    {k: 'New detection', c: 'def', grp: 'Defense', t: 'The gap becomes the next rule: written, validated, tuned, measured and documented. Then the loop starts again.',
+     w: '<a href="attack-defense-codex.html#blue-loop">Card 10, the blue loop</a>'},
+  ];
+  const ringXY = (t, cx, cy, r) => { const a = (-90 + t * 45) * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+  const arcD = (t1, t2, cx, cy, r) => { const [x1, y1] = ringXY(t1, cx, cy, r), [x2, y2] = ringXY(t2, cx, cy, r);
+    return `M${x1.toFixed(2)} ${y1.toFixed(2)}A${r} ${r} 0 ${(t2 - t1) * 45 > 180 ? 1 : 0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`; };
+  const host = document.getElementById('xf-loop'), panel = document.getElementById('xf-stage');
+  const cx = 380, cy = 300, R = 220, back = -50 / 45, [tx, ty] = ringXY(back, cx, cy, R);
+  let x, stageI = 0;
+  const stops = [S('stop', {offset: 0, style: 'stop-color:var(--atk);stop-opacity:0'}), S('stop', {offset: 1, style: 'stop-color:var(--atk);stop-opacity:.95'})];
+  const svg = S('svg', {viewBox: '0 0 760 600', role: 'group', 'aria-label': 'The loop: eight stages in a cycle, from an attack through telemetry, detection, investigation, response, emulation and finding the gap to a new detection, and back to the start'},
+    S('defs', {}, S('linearGradient', {id: 'xf-trail-g', gradientUnits: 'userSpaceOnUse', x1: tx.toFixed(2), y1: ty.toFixed(2), x2: cx, y2: cy - R}, stops)),
+    S('circle', {cx, cy, r: R, class: 'xf-track'}));
+  STAGES.forEach((s, i) => svg.append(S('path', {d: arcD(i, i + 1, cx, cy, R), class: 'xf-seg', style: `stroke:${col(s.c)}`})));
+  [['OFFENSE', .5, 'atk'], ['DEFENSE', 2.5, 'def'], ['PURPLE TEAM', 5.5, 'purple']].forEach(([l, t, c]) => {
+    const [lx, ly] = ringXY(t, cx, cy, 158); svg.append(text(lx.toFixed(1), ly.toFixed(1), l, 'xf-mono xf-sector', {'text-anchor': 'middle', style: `fill:${col(c)}`})); });
+  svg.append(text(cx, cy + 2, 'The loop', 'xf-disp', {'text-anchor': 'middle', style: 'font-size:38px;letter-spacing:-.02em'}),
+             text(cx, cy + 30, '8 STAGES · ONE CYCLE', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--muted-dim)'}));
+  const packet = S('circle', {cx, cy: cy - R, r: 6.5, class: 'xf-packet', filter: 'url(#xf-glow)'});
+  const orbit = S('g', {}, S('path', {d: arcD(back, 0, cx, cy, R), class: 'xf-trail'}), packet);
+  svg.append(orbit);
+  const nodes = STAGES.map((s, i) => {
+    const [nx, ny] = ringXY(i, cx, cy, R), [lx, ly] = ringXY(i, cx, cy, R + 30);
+    const cos = (lx - cx) / (R + 30), sin = (ly - cy) / (R + 30);
+    const g = S('g', {class: 'xf-node', tabindex: 0, role: 'button', 'aria-label': `Stage ${i + 1}, ${s.k}`, style: `--c:${col(s.c)}`},
+      S('circle', {cx: nx.toFixed(2), cy: ny.toFixed(2), r: 13, class: 'xf-halo'}),
+      S('circle', {cx: nx.toFixed(2), cy: ny.toFixed(2), r: 13, class: 'xf-disc'}),
+      S('circle', {cx: nx.toFixed(2), cy: ny.toFixed(2), r: 4.5, class: 'xf-dot'}),
+      S('text', {x: lx.toFixed(1), y: (ly + (sin < -.8 ? -4 : sin > .8 ? 16 : 6)).toFixed(1), 'text-anchor': cos > .3 ? 'start' : cos < -.3 ? 'end' : 'middle', class: 'xf-nlabel'},
+        S('tspan', {class: 'xf-nnum'}, String(i + 1).padStart(2, '0') + '  '), s.k));
+    wire(g, () => { x.settle(i); x.pause(); });
+    svg.append(g); return g;
+  });
+  host.append(svg);
+  const spin = deg => orbit.setAttribute('transform', `rotate(${deg.toFixed(2)} ${cx} ${cy})`);
+  const tint = k => { const c = col(STAGES[k].c); packet.style.fill = c; stops.forEach(s => { s.style.stopColor = c; }); };
+  const ping = k => { const n = nodes[k]; n.classList.remove('xf-ping'); void n.getBoundingClientRect(); n.classList.add('xf-ping'); };
+  function select(i) {
+    stageI = (i + 8) % 8; const s = STAGES[stageI];
+    nodes.forEach((n, j) => n.classList.toggle('xf-on', j === stageI));
+    panel.style.setProperty('--c', col(s.c));
+    panel.innerHTML = `<p class="xf-sp-k">Stage ${String(stageI + 1).padStart(2, '0')} of 08 · ${s.grp}</p><h3>${s.k}</h3><p>${s.t}</p>
+      <p class="xf-sp-where"><span>Where it lives</span>${s.w}</p>
+      <div class="xf-navbtns"><button type="button" class="xf-btn" data-d="-1">← Previous</button><button type="button" class="xf-btn" data-d="1">Next →</button></div>`;
+  }
+  panel.addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (b) { x.settle((stageI + Number(b.dataset.d) + 8) % 8); x.pause(); } });
+  x = explainer(host, {
+    name: 'loop', bar: document.getElementById('xf-loop-bar'), captions: false, hold: 0, rest: api => api.settle(0),
+    beats: STAGES.map((s, k) => ({dur: 4200, cap: s.k,
+      cues: [[0, () => tint((k + 7) % 8)], [.3, sc => { tint(k); select(k); if (!sc.instant) ping(k); }]],
+      tick: p => spin(((k - 1) + ease(seg(p, 0, .3))) * 45)})),
+  });
+})();
 
 // ---------- term tooltips (this block is identical in field-map.html and attack-defense-codex.html) ----------
 // Glossary terms in running text get a dotted underline; hover, focus or tap shows the definition.
