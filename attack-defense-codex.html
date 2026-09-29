@@ -261,6 +261,44 @@
   .libnav a.home::before{content:""; width:8px; height:8px; border-radius:2px; background:var(--amber); flex:0 0 auto;}
   .libnav a.home:hover{color:var(--amber);}
   @media (max-width:420px){ .libnav a.home .w{display:none;} .libnav a{padding:7px 9px;} }
+  /* ---------- explainer (duplicated verbatim in the Field Map and the Codex) ---------- */
+  .xf-fig{margin:22px 0; background:var(--panel); border:1px solid var(--line-soft); border-radius:14px; padding:20px 22px;}
+  .xf-fig svg,.xf-rail svg{display:block; width:100%; height:auto; overflow:visible;}
+  .xf-fig figcaption{font-size:.84rem; color:var(--muted-dim); margin-top:12px; max-width:84ch; text-wrap:pretty;}
+  .xf-kick{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--amber); margin:0 0 4px;}
+  .xf-h{font-family:"Space Grotesk",system-ui,sans-serif; font-weight:600; font-size:1.2rem; letter-spacing:-.01em; line-height:1.2; margin:0 0 6px;}
+  .xf-claim{font-size:.92rem; color:var(--muted); margin:0 0 14px; max-width:78ch;}
+  .xf-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  .xf-scroll > svg{min-width:720px;}
+  .xf-mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.1em;}
+  .xf-lab{font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:12.5px; fill:var(--muted);}
+  .xf-disp{font-family:"Space Grotesk",system-ui,sans-serif; font-weight:600; fill:var(--fg);}
+  .xf-bx{fill:var(--panel-2); stroke-width:1.2; stroke-opacity:.85; transition:stroke .25s, stroke-width .25s;}
+  .xf-bx.xf-hot{stroke:var(--amber)!important; stroke-width:2.6; stroke-opacity:1;}
+  .xf-bx.xf-hotp{stroke:var(--purple)!important; stroke-width:2.6; stroke-opacity:1;}
+  .xf-bt{font-family:"Space Grotesk",system-ui,sans-serif; font-weight:600; font-size:15px; fill:var(--fg);}
+  .xf-bs{font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:12px; fill:var(--muted);}
+  .xf-tick{stroke:var(--muted-dim); stroke-width:1; stroke-dasharray:2 3;}
+  .xf-burst{fill:none; stroke-width:2; transform-box:fill-box; transform-origin:center; animation:xf-burst .7s ease-out forwards;}
+  @keyframes xf-burst{from{transform:scale(1); opacity:.95;} to{transform:scale(4.5); opacity:0;}}
+  .xf-show{opacity:0; transition:opacity .35s;}
+  .xf-show.xf-on{opacity:1;}
+  .xbar{display:flex; align-items:center; gap:14px; margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft);}
+  .xplay{flex:0 0 auto; width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:none; color:var(--fg); display:grid; place-items:center; cursor:pointer; padding:0;}
+  .xplay:hover,.xplay:focus-visible{border-color:var(--amber); outline:none;}
+  .xplay svg{width:11px; height:11px; fill:currentColor;}
+  .xplay[hidden]{display:none;}
+  .xdots{display:flex; flex-wrap:wrap; gap:5px; flex:0 1 auto;}
+  .xdot{width:22px; height:20px; background:none; border:none; padding:0; cursor:pointer; position:relative;}
+  .xdot::before,.xdot::after{content:""; position:absolute; left:0; right:0; top:8px; height:4px; border-radius:2px; background:var(--line);}
+  .xdot::after{background:var(--amber); transform-origin:left; transform:scaleX(0);}
+  .xdot.xdone::after{transform:scaleX(1); background:var(--muted-dim);}
+  .xdot.xcur::after{transform:scaleX(var(--p,0));}
+  .xdot:focus-visible{outline:1px solid var(--amber); outline-offset:2px;}
+  .xcap{margin:0; font-size:.95rem; color:var(--fg); flex:1; min-width:0; text-wrap:pretty;}
+  @media (max-width:640px){ .xbar{flex-wrap:wrap;} .xcap{flex-basis:100%;} }
+  @media (prefers-reduced-motion: reduce){ .xf-fig *,.xf-rail *,.xbar *{transition:none!important;} .xf-burst{display:none;} }
+  /* ---------- /explainer ---------- */
 </style>
 </head>
 <body>
@@ -2898,6 +2936,160 @@ const TermTips=(()=>{
   return {init,annotate};
 })();
 TermTips.init(GLOSS);
+
+/* ---------- explainer (duplicated verbatim in the Field Map and the Codex) ---------- */
+// Self-playing, narrated SVG figures. A figure is a list of beats {dur, cap, cues:[[p, fn]], tick(p, sc)}:
+// cues fire once as the beat's progress passes p, and moving things are particles (sc.spawn). Seeking
+// replays earlier beats with sc.instant = true, so every cue must leave the figure in its end state even
+// when no particle is drawn. The only global this block defines is XF.
+const XF = (() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const S = (tag, attrs = {}, ...kids) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) { const v = attrs[k]; if (v != null && v !== false) e.setAttribute(k, v); }
+    for (const c of kids.flat()) if (c != null && c !== false) e.append(c);
+    return e;
+  };
+  const col = v => `var(--${v})`;
+  const text = (x, y, str, cls, attrs = {}) => S('text', {x, y, class: cls, ...attrs}, str);
+  const lines = (x, y, arr, lh, cls, attrs = {}) => S('text', {x, y, class: cls, ...attrs}, arr.map((l, i) => S('tspan', {x, dy: i ? lh : 0}, l)));
+  const wrap = (str, max) => {
+    const out = []; let cur = '';
+    for (const w of str.split(' ')) { if (cur && (cur + ' ' + w).length > max) { out.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w; }
+    if (cur) out.push(cur);
+    return out;
+  };
+  const arrow = (x1, y1, x2, y2, c, {dash, width = 1.6, head = true} = {}) =>
+    S('line', {x1, y1, x2, y2, style: `stroke:${col(c)};stroke-width:${width}`, 'stroke-dasharray': dash, 'marker-end': head ? `url(#xf-ah-${c})` : null});
+  const box = (x, y, w, h, title, sub, c, center) => {
+    const g = S('g', {}, S('rect', {x, y, width: w, height: h, rx: 8, class: 'xf-bx', style: `stroke:${col(c)}`}));
+    if (center) { const ls = [].concat(title); g.append(lines(x + w / 2, y + h / 2 + 5 - (ls.length - 1) * 8, ls, 16, 'xf-bt', {'text-anchor': 'middle'})); }
+    else { g.append(text(x + 14, y + 25, title, 'xf-bt')); if (sub) g.append(text(x + 14, y + 45, sub, 'xf-bs')); }
+    return g;
+  };
+  const wire = (el, fn) => {
+    el.addEventListener('click', fn);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
+  };
+  const RM = matchMedia('(prefers-reduced-motion: reduce)');
+  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const clamp = t => Math.max(0, Math.min(1, t));
+  const seg = (p, a, b) => clamp((p - a) / (b - a));
+  const at = (el, x, y) => el.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+  const DEEP = 'var(--code-bg,#0A0E13)';
+  const SHAPES = {
+    dot: (c, r = 4.5) => S('circle', {r, style: `fill:${col(c)}`, filter: 'url(#xf-glow)'}),
+    pill: c => S('g', {}, S('rect', {x: -14, y: -8, width: 28, height: 16, rx: 4, style: `fill:${DEEP};stroke:${col(c)};stroke-width:1.5`}),
+      S('line', {x1: -8, y1: -2.5, x2: 8, y2: -2.5, style: `stroke:${col(c)};stroke-width:1.5`}),
+      S('line', {x1: -8, y1: 2.5, x2: 3, y2: 2.5, style: `stroke:${col(c)};stroke-width:1.5;stroke-opacity:.6`})),
+    diamond: c => S('path', {d: 'M0-8L8 0L0 8L-8 0Z', style: `fill:${col(c)}`, filter: 'url(#xf-glow)'}),
+    ticket: c => S('g', {}, S('rect', {x: -26, y: -10, width: 52, height: 20, rx: 5, style: `fill:${DEEP};stroke:${col(c)};stroke-width:1.5`}),
+      S('text', {x: 0, y: 3.5, 'text-anchor': 'middle', class: 'xf-mono', style: `fill:${col(c)};font-size:8.5px;letter-spacing:.14em`}, 'TICKET')),
+  };
+  const PLAY_I = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg>';
+  const PAUSE_I = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1h2.2v8H2zM5.8 1H8v8H5.8z"/></svg>';
+  // the glow filter and one arrowhead per color, shared by every figure on the page
+  document.body.prepend(S('svg', {width: 0, height: 0, style: 'position:absolute', 'aria-hidden': 'true', focusable: 'false'},
+    S('defs', {},
+      S('filter', {id: 'xf-glow', x: '-150%', y: '-150%', width: '400%', height: '400%'},
+        S('feGaussianBlur', {stdDeviation: 3.2, result: 'b'}), S('feMerge', {}, S('feMergeNode', {in: 'b'}), S('feMergeNode', {in: 'SourceGraphic'}))),
+      ['atk', 'def', 'purple', 'amber', 'ok', 'muted-dim'].map(c =>
+        S('marker', {id: `xf-ah-${c}`, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 9, markerHeight: 9, markerUnits: 'userSpaceOnUse', orient: 'auto-start-reverse'},
+          S('path', {d: 'M0 0L10 5L0 10z', style: `fill:${col(c)}`}))))));
+  const figs = {};
+
+  function explainer(host, cfg) {
+    const B = cfg.beats, layer = cfg.layer, parts = [], hold = cfg.hold ?? 1600, sc = {instant: false};
+    let i = 0, t = 0, fired = 0, holdT = 0, userPaused = false, visible = false, started = false, raf = 0, last = 0, shownI = -1;
+    sc.spawn = o => {
+      if (sc.instant || !layer) { o.onDone?.(); return null; }
+      const p = {el: o.shape, o, t: 0}; layer.append(p.el); parts.push(p); move(p, 0); return p;
+    };
+    sc.burst = (x, y, c) => {
+      if (sc.instant || !layer) return;
+      const b = S('circle', {cx: x, cy: y, r: 5, class: 'xf-burst', style: `stroke:${col(c)}`}); layer.append(b); setTimeout(() => b.remove(), 800);
+    };
+    sc.flash = (el, cls = 'xf-hot') => { if (sc.instant) return; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), 1000); };
+    function move(p, k) {
+      const {from: a, to: b, ctrl: c, fade} = p.o, q = ease(k);
+      const x = c ? (1 - q) * (1 - q) * a[0] + 2 * (1 - q) * q * c[0] + q * q * b[0] : a[0] + (b[0] - a[0]) * q;
+      const y = c ? (1 - q) * (1 - q) * a[1] + 2 * (1 - q) * q * c[1] + q * q * b[1] : a[1] + (b[1] - a[1]) * q;
+      at(p.el, x, y);
+      p.el.style.opacity = fade === 'ghost' ? Math.max(0, 1 - k * 1.7) : k < .12 ? k / .12 : k > .92 ? (1 - k) / .08 : 1;
+    }
+    function updateParts(dt) {
+      for (let j = parts.length - 1; j >= 0; j--) {
+        const p = parts[j]; p.t += dt; const k = Math.min(1, p.t / p.o.dur); move(p, k);
+        if (k >= 1) { p.el.remove(); parts.splice(j, 1); p.o.onDone?.(); }
+      }
+    }
+    function clearParts() { parts.length = 0; layer?.replaceChildren(); }
+    function fire(b, p) { const cs = b.cues || []; while (fired < cs.length && cs[fired][0] <= p) cs[fired++][1](sc); }
+    function goTo(k) {
+      cfg.reset?.(); clearParts(); sc.instant = true;
+      for (let j = 0; j < k; j++) { fired = 0; fire(B[j], 1); B[j].tick?.(1, sc); }
+      sc.instant = false; i = k; t = 0; fired = 0; holdT = 0; show();
+    }
+    function settle(k) {
+      goTo(k); sc.instant = true; fire(B[k], 1); B[k].tick?.(1, sc); sc.instant = false; t = B[k].dur; show();
+    }
+    function step(dt) {
+      cfg.ambient?.(dt, sc); updateParts(dt);
+      if (i < B.length) {
+        t += dt; const b = B[i], p = Math.min(1, t / b.dur); fire(b, p); b.tick?.(p, sc);
+        if (t >= b.dur) { i++; t = 0; fired = 0; }
+      } else if ((holdT += dt) >= hold) goTo(0);
+      show();
+    }
+    const running = () => visible && !userPaused && !document.hidden && !RM.matches;
+    function frame(now) { raf = 0; if (!running()) return; step(Math.min(50, now - last)); last = now; raf = requestAnimationFrame(frame); }
+    function kick() { if (!raf && running()) { last = performance.now(); raf = requestAnimationFrame(frame); } }
+    function onVis(v) { visible = v; if (visible && !started && !RM.matches) { started = true; goTo(0); } kick(); }
+    // the beat bar: pause/play, one bar per beat (click to jump), the narration line
+    const bar = document.createElement('div'); bar.className = 'xbar';
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'xplay';
+    const dotsEl = document.createElement('div'); dotsEl.className = 'xdots';
+    const cap = document.createElement('p'); cap.className = 'xcap';
+    const dots = B.map((b, k) => {
+      const d = document.createElement('button'); d.type = 'button'; d.className = 'xdot';
+      d.setAttribute('aria-label', `Beat ${k + 1} of ${B.length}${b.cap ? ': ' + b.cap : ''}`);
+      d.addEventListener('click', () => { started = true; if (RM.matches || userPaused) settle(k); else goTo(k); kick(); });
+      dotsEl.append(d); return d;
+    });
+    btn.addEventListener('click', () => { userPaused = !userPaused; updBtn(); kick(); });
+    bar.append(btn, dotsEl); if (cfg.captions !== false) bar.append(cap);
+    cfg.bar.append(bar);
+    function updBtn() { btn.hidden = RM.matches; btn.innerHTML = userPaused ? PLAY_I : PAUSE_I; btn.setAttribute('aria-label', userPaused ? 'Play the animation' : 'Pause the animation'); }
+    function show() {
+      const k = Math.min(i, B.length - 1), p = i >= B.length ? 1 : Math.min(1, t / B[i].dur);
+      dots.forEach((d, j) => { d.classList.toggle('xdone', j < i); d.classList.toggle('xcur', j === i); });
+      if (i < B.length) dots[i].style.setProperty('--p', p.toFixed(3));
+      if (k !== shownI) { shownI = k; cap.textContent = B[k].cap || ''; }
+    }
+    const rest = () => (cfg.rest ? cfg.rest(api) : settle(B.length - 1));
+    const onRM = () => { if (RM.matches) rest(); updBtn(); kick(); };
+    const io = new IntersectionObserver(([e]) => onVis(e.isIntersecting), {threshold: .3});
+    const api = {sc, settle, goTo,
+      pause() { userPaused = true; updBtn(); },
+      state: () => ({beat: i, paused: userPaused, started}),
+      advance(ms) { for (let k = 0; k < ms; k += 16) step(16); },  // test hook: moves the clock, ignoring visibility and pause
+      setVisible: onVis,                                          // test hook: what the IntersectionObserver would report
+      destroy() {
+        io.disconnect(); cancelAnimationFrame(raf); raf = 0; clearParts(); bar.remove();
+        document.removeEventListener('visibilitychange', kick); RM.removeEventListener?.('change', onRM);
+        if (figs[cfg.name] === api) delete figs[cfg.name];
+      }};
+    document.addEventListener('visibilitychange', kick);
+    RM.addEventListener?.('change', onRM);
+    updBtn(); rest();                         // complete at rest until it scrolls into view
+    io.observe(host);
+    if (cfg.name) figs[cfg.name] = api;
+    return api;
+  }
+
+  return {S, col, text, lines, wrap, arrow, box, wire, RM, ease, clamp, seg, at, DEEP, SHAPES, explainer, figs};
+})();
+/* ---------- /explainer ---------- */
 
 // render surface filter chips
 const keyrow = document.getElementById('keyrow');
