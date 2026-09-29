@@ -1303,13 +1303,13 @@ const XF = (() => {
 (() => {
   const {S, text, lines, SHAPES, explainer} = XF;
   const host = document.getElementById('xf-proc');
-  const svg = S('svg', {viewBox: '0 0 1000 440', role: 'img', 'aria-label': 'A process tree: explorer starts Outlook, and an administrator opens PowerShell from the Start menu, so explorer starts that PowerShell too; Outlook starts Word, Word starts a second PowerShell, and that one connects to a server on the internet. Each start and the connection reach the SIEM as events; nothing is flagged until a rule matches the one PowerShell whose parent is Word.'});
+  const svg = S('svg', {viewBox: '0 0 1000 440', role: 'img', 'aria-label': 'A process tree on Alice’s laptop: explorer starts Outlook, and when Alice, an administrator, opens PowerShell from the Start menu, explorer starts that PowerShell too; Outlook starts Word, Word starts a second PowerShell, and that one connects to a server on the internet. Each start and the connection reach the SIEM as events; nothing is flagged until a rule matches the one PowerShell whose parent is Word.'});
   svg.append(text(20, 22, 'LAPTOP · WS-042 · EDR AGENT RUNNING', 'xf-mono', {style: 'fill:var(--muted-dim)'}),
     S('rect', {x: 20, y: 34, width: 430, height: 392, rx: 12, style: 'fill:var(--ink);stroke:var(--line)'}),
     text(600, 22, 'PROCESS EVENTS · SENT TO THE SIEM', 'xf-mono', {style: 'fill:var(--def)'}),
     S('rect', {x: 600, y: 34, width: 380, height: 392, rx: 12, style: 'fill:var(--code-bg,#0A0E13);stroke:var(--line)'}));
   // the tree, listed top to bottom as a process viewer shows it: [name, x, y, parent index]; the attacker's PowerShell is k = 3,
-  // the admin's (started from the Start menu, so its parent is explorer too) is k = 4
+  // Alice's own admin console (started from the Start menu, so its parent is her explorer.exe too) is k = 4
   const P = [['explorer.exe', 40, 58], ['outlook.exe', 80, 128, 0], ['winword.exe', 120, 198, 1], ['powershell.exe', 160, 268, 2], ['powershell.exe', 80, 348, 0]];
   const conns = P.slice(1).map(([, x, y, pk], k) => { const [, px, py] = P[pk];
     return S('path', {d: `M${px + 22} ${py + 34}V${y + 17}H${x}`, pathLength: 1, class: 'xf-conn' + (k === 2 ? ' xf-bad' : '')}); });
@@ -1354,16 +1354,16 @@ const XF = (() => {
     ambient(dt, sc) { if (netOpen && (acc += dt) > 600) { acc = 0; sc.spawn({shape: SHAPES.dot('atk', 3), from: [332, 285], to: [499, 285], dur: 850}); } },
     beats: [
       {dur: 3800, view: TREE, cap: 'Alice opens Outlook. Windows starts it as a child of explorer.exe, her desktop.', cues: [[.05, () => grow(1)], [.3, toRow(0, [248, 145])]]},
-      {dur: 4600, view: TREE, cap: 'An admin opens PowerShell from the Start menu. Parent: explorer.exe. Nothing unusual, no alert.', cues: [
+      {dur: 4600, view: TREE, cap: 'Alice, an administrator, opens PowerShell from the Start menu. Parent: explorer.exe. Nothing unusual, no alert.', cues: [
         [.05, () => grow(4)], [.3, toRow(1, [248, 365])]]},
-      {dur: 3800, view: TREE, cap: 'Alice opens the attached document, so Outlook starts Word.', cues: [[.05, () => grow(2)], [.3, toRow(2, [288, 215])]]},
+      {dur: 3800, view: TREE, cap: 'Back in Outlook, Alice opens an attached document, so Outlook starts Word.', cues: [[.05, () => grow(2)], [.3, toRow(2, [288, 215])]]},
       {dur: 4200, view: TREE, cap: 'A macro inside the document makes Word start PowerShell.', cues: [[.05, () => grow(3)], [.3, toRow(3, [328, 285])]]},
       {dur: 4400, view: [320, 880], cap: 'PowerShell opens a connection to a server on the internet. The EDR records that too.', cues: [
         [.05, () => { net.classList.add('xf-on'); netOpen = true; }], [.35, toRow(4, [420, 285], 130)]]},
-      // cause → effect: the rule lights, then the row it matched, then the alert it raises, then the pair in the tree
+      // cause → effect: the rule lights and stays lit until its alert is up, then the row it matched, the alert, and the pair in the tree
       {dur: 5400, view: [600, 980], cap: 'A rule flags the odd pair. PowerShell on its own is everyday admin work; Word as its parent is not.', cues: [
-        [.05, sc => sc.flash(rule)], [.18, () => rows[3].classList.add('xf-flag')], [.3, () => alert.classList.add('xf-on')],
-        [.45, () => odd.forEach(e => e.classList.add('xf-flag'))]]},
+        [.05, () => rule.classList.add('xf-hot')], [.18, () => rows[3].classList.add('xf-flag')], [.3, () => alert.classList.add('xf-on')],
+        [.4, () => rule.classList.remove('xf-hot')], [.45, () => odd.forEach(e => e.classList.add('xf-flag'))]]},
     ],
   });
 })();
