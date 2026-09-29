@@ -255,6 +255,15 @@
   .xf-badge{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10px; letter-spacing:.06em; fill:var(--muted-dim);}
   .xf-badge.xf-miss{fill:var(--atk);}
   .xf-badge.xf-still{fill:var(--ok);}
+  .xf-ctx{transition:opacity .4s;}
+  .xf-ctx.xf-dim{opacity:.45;}
+  .xf-bx.xf-hotc{stroke:var(--def)!important; stroke-width:2.6; stroke-opacity:1;}
+  .xf-show.xf-on.xf-held{opacity:.45;}
+  .xf-foot .xf-halo{fill:none; stroke:var(--atk); stroke-width:2; opacity:0; transform-box:fill-box; transform-origin:center;}
+  .xf-foot.xf-ping .xf-halo{animation:xf-halo 1s ease-out;}
+  .xf-iso-b{stroke-dashoffset:344; transition:stroke-dashoffset .6s ease .1s;}
+  .xf-iso.xf-on .xf-iso-b{stroke-dashoffset:0;}
+  @media (prefers-reduced-motion: reduce){ .xf-ctx.xf-dim{opacity:1;} .xf-foot.xf-ping .xf-halo{animation:none;} }
 </style>
 </head>
 <body>
@@ -1167,77 +1176,114 @@ const XF = (() => {
 
 // ---------- figure: the defensive stack as one machine (§04) ----------
 (() => {
-  const {S, text, lines, arrow, box, SHAPES, explainer} = XF;
+  const {S, text, lines, arrow, box, at, SHAPES, explainer} = XF;
   const host = document.getElementById('xf-stack');
-  const svg = S('svg', {viewBox: '0 0 1000 512', role: 'img', 'aria-label': 'The defensive stack as one machine: sensors stream telemetry into the SIEM; preventive controls stop two attacks; a third lands on a laptop, the EDR reports it, a SIEM rule matches, SOAR isolates the laptop and hands the case to an analyst; breach-and-attack simulation tests the whole stack.'},
+  const svg = S('svg', {viewBox: '0 0 1000 512', role: 'img', 'aria-label': 'The defensive stack as one machine: sensors stream telemetry into the SIEM; preventive controls stop two attacks, and each block is logged; a third lands on a laptop and stays there, the EDR reports it, a SIEM rule matches, SOAR tells the EDR to cut the laptop off the network and hands the case to an analyst, whose query pulls everything that laptop and that account did; breach-and-attack simulation tests the whole stack.'},
     S('defs', {}, S('pattern', {id: 'xf-hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)'},
       S('rect', {width: 6, height: 6, style: 'fill:var(--panel)'}), S('line', {x1: 0, y1: 0, x2: 0, y2: 6, style: 'stroke:var(--ok);stroke-width:2.4;stroke-opacity:.7'}))));
+  // the static context: dimmed (camera focus) in the beats that are not about it
+  const ctx = {
+    feeds: S('g', {class: 'xf-ctx'}, text(230, 14, 'FEEDS', 'xf-mono', {style: 'fill:var(--amber)'}),
+      box(230, 24, 160, 60, 'Threat intel', 'known-bad indicators', 'amber'), box(410, 24, 160, 60, 'Deception', 'alerts when touched', 'amber'),
+      arrow(310, 84, 310, 138, 'amber'), arrow(490, 84, 490, 138, 'amber')),
+    prevent: S('g', {class: 'xf-ctx'}, text(20, 150, 'PREVENT', 'xf-mono', {style: 'fill:var(--ok)'}),
+      lines(20, 172, ['MFA', 'Patching', 'Allowlisting', 'IMDSv2', 'Segmentation'], 18, 'xf-lab')),
+    posture: S('g', {class: 'xf-ctx'}, text(520, 478, 'POSTURE · CSPM · SSPM · VULNERABILITY SCANNING · EASM', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--amber)'}),
+      S('path', {d: 'M230 444v10h580v-10', style: 'fill:none;stroke:var(--amber);stroke-width:1.4;stroke-dasharray:4 3'}),
+      text(520, 498, 'find the weak spots (unpatched software, unsafe settings, forgotten hosts) before an attacker does', 'xf-lab', {'text-anchor': 'middle', style: 'font-size:11.5px'})),
+    bas: S('g', {class: 'xf-ctx'}, text(986, 370, 'BAS · EMULATION', 'xf-mono', {'text-anchor': 'end', style: 'fill:var(--purple)'}),
+      arrow(990, 386, 816, 386, 'purple', {dash: '5 4'}), text(986, 406, 'tests the whole stack', 'xf-lab', {'text-anchor': 'end'})),
+  };
+  const focus = (...lit) => Object.entries(ctx).forEach(([k, g]) => g.classList.toggle('xf-dim', !lit.includes(k)));
+  const ALL = Object.keys(ctx);
   const siem = box(230, 140, 580, 64, 'SIEM', 'collects every sensor’s telemetry, normalizes it, runs the detection rules', 'def');
   const soar = box(600, 24, 160, 60, 'SOAR', 'runs the playbook', 'def'), an = box(800, 24, 180, 60, 'SOC analyst', 'investigates, responds', 'def');
-  svg.append(text(230, 14, 'FEEDS', 'xf-mono', {style: 'fill:var(--amber)'}),
-    box(230, 24, 160, 60, 'Threat intel', 'known-bad indicators', 'amber'), box(410, 24, 160, 60, 'Deception', 'alerts when touched', 'amber'),
-    arrow(310, 84, 310, 138, 'amber'), arrow(490, 84, 490, 138, 'amber'),
-    soar, an, arrow(760, 54, 798, 54, 'def'), siem, arrow(680, 140, 680, 86, 'def'),
+  svg.append(ctx.feeds, soar, an, arrow(760, 54, 798, 54, 'def'), siem, arrow(680, 140, 680, 86, 'def'),
     text(690, 118, 'A RULE FIRES', 'xf-mono', {style: 'fill:var(--def)'}));
-  const tag = text(796, 164, 'RULE MATCH', 'xf-mono xf-show', {'text-anchor': 'end', style: 'fill:var(--amber)'});
-  svg.append(tag,
+  // the SIEM's status: blocks logged (beat 2), the rule that matched (beat 5) and, under it, the emulation that proved the rule (beat 8)
+  const logged = text(300, 164, '', 'xf-mono xf-show xf-logged', {style: 'fill:var(--def)'});
+  const match = text(796, 164, 'RULE MATCH', 'xf-mono xf-show', {'text-anchor': 'end', style: 'fill:var(--amber)'});
+  const tested = text(796, 186, 'TESTED ✓', 'xf-mono xf-show', {'text-anchor': 'end', style: 'fill:var(--purple)'});
+  svg.append(logged, match, tested,
     S('rect', {x: 230, y: 340, width: 580, height: 90, rx: 10, style: 'fill:var(--ink);stroke:var(--line)'}),
-    text(796, 424, 'YOUR ENVIRONMENT', 'xf-mono', {'text-anchor': 'end', style: 'fill:var(--muted-dim);font-size:10px'}),
+    text(796, 424, 'YOUR ENVIRONMENT', 'xf-mono', {'text-anchor': 'end', style: 'fill:var(--muted-dim);font-size:10.5px'}),
     text(822, 238, 'TELEMETRY', 'xf-mono', {style: 'fill:var(--def)'}));
-  [['EDR', 'endpoints'], [['Identity', 'logs'], 'accounts'], ['NDR', 'network'], [['Cloud audit', 'logs'], 'cloud'], ['WAF', 'web apps']].forEach(([name, asset], i) => {
-    const bx = 230 + i * 118, cx = bx + 54;
-    svg.append(box(bx, 262, 108, 52, name, null, 'def', true), arrow(cx, 262, cx, 206, 'def', {dash: '3 4'}),
-      S('line', {x1: cx, y1: 340, x2: cx, y2: 316, class: 'xf-tick'}), text(cx, 404, asset, 'xf-lab', {'text-anchor': 'middle'})); });
-  const land = S('circle', {cx: 284, cy: 376, r: 12, class: 'xf-show', style: 'fill:none;stroke:var(--def);stroke-width:1.6;stroke-dasharray:3 3'});
-  const iso = S('g', {class: 'xf-show'}, S('rect', {x: 238, y: 346, width: 92, height: 80, rx: 8, style: 'fill:none;stroke:var(--ok);stroke-width:1.8;stroke-dasharray:5 3'}),
-    text(284, 421, 'ISOLATED', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--ok);font-size:9.5px'}));
-  svg.append(land, iso,
-    text(20, 150, 'PREVENT', 'xf-mono', {style: 'fill:var(--ok)'}),
-    lines(20, 172, ['MFA', 'Patching', 'Allowlisting', 'IMDSv2', 'Segmentation'], 18, 'xf-lab'),
+  const sens = [['EDR', 'endpoints'], [['Identity', 'logs'], 'accounts'], ['NDR', 'network'], [['Cloud audit', 'logs'], 'cloud'], ['WAF', 'web apps']].map(([name, asset], i) => {
+    const bx = 230 + i * 118, cx = bx + 54, b = box(bx, 262, 108, 52, name, null, 'def', true);
+    svg.append(b, arrow(cx, 262, cx, 206, 'def', {dash: '3 4'}),
+      S('line', {x1: cx, y1: 340, x2: cx, y2: 316, class: 'xf-tick'}), text(cx, 404, asset, 'xf-lab', {'text-anchor': 'middle'}));
+    return b.firstChild; });
+  const [edr, idn, , , waf] = sens;
+  // the attacker who got in: a red dot on the laptop that stays, pings when it lands, and dims once it is contained
+  const foot = S('g', {class: 'xf-show xf-foot'}, S('circle', {r: 7, class: 'xf-halo'}), SHAPES.dot('atk', 5)); at(foot, 284, 376);
+  // the EDR's isolation: a green dashed outline that draws itself around the laptop (dashes counted in pathLength units)
+  const DASH = Array(43).fill('5 3').join(' ') + ' 0 344';
+  const iso = S('g', {class: 'xf-show xf-iso'},
+    S('path', {d: 'M246 346h76a8 8 0 0 1 8 8v64a8 8 0 0 1-8 8h-76a8 8 0 0 1-8-8v-64a8 8 0 0 1 8-8z', pathLength: 344, class: 'xf-iso-b',
+      style: `fill:none;stroke:var(--ok);stroke-width:1.8;stroke-dasharray:${DASH}`}),
+    text(284, 421, 'ISOLATED', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--ok);font-size:10.5px'}));
+  // the case, with the analyst; and the analyst's query back into the SIEM
+  const kase = S('g', {class: 'xf-show xf-case'}, SHAPES.diamond('amber')); at(kase, 962, 42);
+  const query = S('g', {class: 'xf-show xf-query'}, arrow(840, 86, 783, 135, 'def', {dash: '3 3', width: 1.4}),
+    text(830, 124, 'QUERY', 'xf-mono', {style: 'fill:var(--def)'}));
+  svg.append(iso, foot, kase, query, ctx.prevent,
     S('rect', {x: 186, y: 256, width: 14, height: 174, rx: 3, style: 'fill:url(#xf-hatch);stroke:var(--ok);stroke-opacity:.8'}),
     text(20, 282, 'ATTACKS', 'xf-mono', {style: 'fill:var(--atk)'}));
   [300, 326].forEach(y => svg.append(arrow(20, y, 182, y, 'atk', {head: false, width: 1}), S('line', {x1: 183, y1: y - 8, x2: 183, y2: y + 8, style: 'stroke:var(--atk);stroke-width:2.2'})));
   svg.append(text(20, 346, 'stopped outright', 'xf-lab'),
     arrow(20, 376, 186, 376, 'atk', {head: false, width: 1}), arrow(200, 376, 264, 376, 'atk', {dash: '4 3', width: 1}),
-    text(20, 398, 'slips past one layer', 'xf-lab'),
-    S('path', {d: 'M230 444v10h580v-10', style: 'fill:none;stroke:var(--amber);stroke-width:1.4;stroke-dasharray:4 3'}),
-    text(520, 478, 'POSTURE · CSPM · SSPM · VULNERABILITY SCANNING · EASM', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--amber)'}),
-    text(520, 498, 'find the weak spots (unpatched software, unsafe settings, forgotten hosts) before an attacker does', 'xf-lab', {'text-anchor': 'middle'}),
-    arrow(990, 386, 816, 386, 'purple', {dash: '5 4'}),
-    text(986, 370, 'BAS · EMULATION', 'xf-mono', {'text-anchor': 'end', style: 'fill:var(--purple)'}),
-    text(986, 406, 'tests the whole stack', 'xf-lab', {'text-anchor': 'end'}));
+    text(20, 398, 'slips past one layer', 'xf-lab'), ctx.posture, ctx.bas);
   const layer = S('g'); svg.append(layer);
   host.append(svg);
   const R = [siem, soar, an].map(g => g.firstChild), red = () => SHAPES.dot('atk', 5);
-  let acc = 0, accF = 0, feed = 0;
+  let acc = 0, accF = 0, feed = 0, blocks = 0;
+  const logBlock = () => { blocks++; logged.textContent = `${blocks} BLOCK${blocks > 1 ? 'S' : ''} LOGGED`; logged.classList.add('xf-on'); };
+  // a stopped attack: it bursts on the wall, and the block itself becomes a log event that climbs into the SIEM
+  const blocked = (sc, y) => sc.spawn({shape: red(), from: [20, y], to: [180, y], dur: 1300, onDone: () => { sc.burst(180, y, 'atk');
+    sc.spawn({shape: SHAPES.pill('def'), from: [193, y], to: [252, 212], ctrl: [193, 214], dur: 1000, onDone: () => { logBlock(); sc.flash(R[0]); }}); }});
   explainer(host, {
-    name: 'stack', bar: document.getElementById('xf-stack-bar'), layer, hold: 1200,
-    reset() { [land, iso, tag].forEach(e => e.classList.remove('xf-on')); },
+    name: 'stack', bar: document.getElementById('xf-stack-bar'), layer, scroller: host, hold: 2500,
+    reset() {
+      [foot, iso, match, tested, logged, kase, query].forEach(e => e.classList.remove('xf-on'));
+      foot.classList.remove('xf-held'); blocks = 0; logged.textContent = ''; focus(...ALL);
+    },
     ambient(dt, sc) {
-      if ((acc += dt) > 260) { acc = 0; const cx = 284 + Math.floor(Math.random() * 5) * 118;
+      if ((acc += dt) > 180) { acc = 0; const cx = 284 + Math.floor(Math.random() * 5) * 118;
         sc.spawn({shape: SHAPES.dot('def', 2.6), from: [cx, 258], to: [cx, 208], dur: 760}); }
       if ((accF += dt) > 2300) { accF = 0; const fx = feed++ % 2 ? 490 : 310;
         sc.spawn({shape: SHAPES.dot('amber', 2.6), from: [fx, 88], to: [fx, 136], dur: 700}); }
     },
     beats: [
-      {dur: 4200, cap: 'Sensors on every layer stream telemetry into the SIEM, all day long.'},
-      {dur: 3800, cap: 'Attacks arrive from outside. Preventive controls stop two of them outright.', cues: [
-        [.05, sc => sc.spawn({shape: red(), from: [20, 300], to: [180, 300], dur: 1300, onDone: () => sc.burst(180, 300, 'atk')})],
-        [.3, sc => sc.spawn({shape: red(), from: [20, 326], to: [180, 326], dur: 1300, onDone: () => sc.burst(180, 326, 'atk')})]]},
-      {dur: 3800, cap: 'A third slips past the wall and lands on a laptop, right under the EDR sensor.', cues: [
-        [.05, sc => sc.spawn({shape: red(), from: [20, 376], to: [284, 376], dur: 2000, onDone: () => { land.classList.add('xf-on'); sc.burst(284, 376, 'def'); }})]]},
-      {dur: 3400, cap: 'The EDR records it, and that event climbs to the SIEM along with everything else.', cues: [
+      {dur: 3000, view: [0, 820], cap: 'Sensors on every layer stream telemetry into the SIEM, all day long.', cues: [[0, () => focus(...ALL)]]},
+      {dur: 4600, view: [0, 820], cap: 'Attacks arrive from outside. Preventive controls stop two of them outright, and each block is logged too.', cues: [
+        [0, () => focus('prevent')], [.05, sc => blocked(sc, 300)], [.3, sc => blocked(sc, 326)]]},
+      {dur: 3800, view: [0, 820], cap: 'A third slips past the wall and lands on a laptop, right under the EDR sensor.', cues: [
+        [0, () => focus()],
+        [.05, sc => sc.spawn({shape: red(), from: [20, 376], to: [284, 376], dur: 2000, onDone: () => {
+          foot.classList.add('xf-on'); sc.flash(foot, 'xf-ping'); sc.flash(edr, 'xf-hotc'); }})]]},
+      {dur: 4600, view: [0, 820], cap: 'The EDR records it (its own detections may fire too), and that event climbs to the SIEM along with everything else.', cues: [
+        [0, () => focus()], [.05, sc => sc.flash(edr, 'xf-hotc')],
         [.1, sc => sc.spawn({shape: SHAPES.pill('amber'), from: [284, 256], to: [284, 214], dur: 1300, onDone: () => sc.flash(R[0])})]]},
-      {dur: 3800, cap: 'A detection rule matches that event, and the SIEM raises an alert.', cues: [
-        [.05, sc => { tag.textContent = 'RULE MATCH'; tag.style.fill = 'var(--amber)'; tag.classList.add('xf-on'); sc.flash(R[0]); }],
+      {dur: 3800, view: [560, 1000], cap: 'A detection rule matches that event, and the SIEM raises an alert.', cues: [
+        [0, () => focus()], [.05, sc => { match.classList.add('xf-on'); sc.flash(R[0]); }],
         [.35, sc => sc.spawn({shape: SHAPES.diamond('amber'), from: [680, 138], to: [680, 88], dur: 1000, onDone: () => sc.flash(R[1])})]]},
-      {dur: 4400, cap: 'SOAR runs the playbook: it isolates the laptop and hands the case to an analyst.', cues: [
-        [.05, sc => sc.spawn({shape: SHAPES.diamond('amber'), from: [690, 54], to: [880, 54], ctrl: [785, 8], dur: 1300, onDone: () => sc.flash(R[2])})],
-        [.4, () => iso.classList.add('xf-on')]]},
-      {dur: 4800, cap: 'Meanwhile, breach-and-attack simulation replays attacks on purpose, to prove all of this still works.', cues: [
-        [.05, sc => sc.spawn({shape: SHAPES.dot('purple', 5), from: [990, 386], to: [756, 386], dur: 1500,
-          onDone: () => sc.spawn({shape: SHAPES.pill('purple'), from: [756, 256], to: [756, 214], dur: 1100,
-            onDone: () => { tag.textContent = 'RULE TESTED ✓'; tag.style.fill = 'var(--purple)'; tag.classList.add('xf-on'); sc.flash(R[0], 'xf-hotp'); }})})]]},
+      {dur: 5000, view: [250, 810], cap: 'SOAR runs the playbook: it tells the EDR to cut the laptop off the network, and hands the case to an analyst.', cues: [
+        [0, () => focus()],
+        // SOAR → EDR (the order), then EDR → laptop (the EDR agent does the isolating)
+        [.05, sc => sc.spawn({shape: SHAPES.dot('ok', 4.5), from: [680, 86], to: [284, 262], ctrl: [430, 120], dur: 1300, onDone: () => { sc.flash(edr);
+          sc.spawn({shape: SHAPES.dot('ok', 4.5), from: [284, 316], to: [284, 350], dur: 500, onDone: () => { iso.classList.add('xf-on'); foot.classList.add('xf-held'); }}); }})],
+        [.5, sc => sc.spawn({shape: SHAPES.diamond('amber'), from: [690, 54], to: [962, 42], ctrl: [826, 0], dur: 1300, onDone: () => { kase.classList.add('xf-on'); sc.flash(R[2]); }})]]},
+      {dur: 4600, view: [560, 1000], cap: 'The analyst pivots: one query pulls everything that laptop and that account did around the alert.', cues: [
+        [0, () => focus()],
+        [.05, sc => sc.spawn({shape: SHAPES.dot('def', 4.5), from: [840, 86], to: [783, 135], dur: 900, onDone: () => {
+          query.classList.add('xf-on'); sc.flash(R[0]); sc.flash(edr, 'xf-hotc'); sc.flash(idn, 'xf-hotc'); }})],
+        [.5, sc => sc.spawn({shape: SHAPES.pill('def'), from: [783, 135], to: [840, 86], dur: 1000, onDone: () => sc.flash(R[2])})]]},
+      {dur: 4800, view: [560, 1000], cap: 'Meanwhile, breach-and-attack simulation replays attacks on purpose, to prove all of this still works.', cues: [
+        [0, () => focus(...ALL)],
+        [.05, sc => sc.spawn({shape: SHAPES.dot('purple', 5), from: [990, 386], to: [756, 386], dur: 1500, onDone: () => {
+          sc.burst(756, 386, 'purple'); sc.flash(waf, 'xf-hotc');
+          sc.spawn({shape: SHAPES.pill('purple'), from: [756, 256], to: [756, 214], dur: 1100,
+            onDone: () => { tested.classList.add('xf-on'); sc.flash(R[0], 'xf-hotp'); }}); }})]]},
     ],
   });
 })();
