@@ -299,6 +299,51 @@
   @media (max-width:640px){ .xbar{flex-wrap:wrap;} .xcap{flex-basis:100%;} }
   @media (prefers-reduced-motion: reduce){ .xf-fig *,.xf-rail *,.xbar *{transition:none!important;} .xf-burst{display:none;} }
   /* ---------- /explainer ---------- */
+  /* ---------- figures (this page only) ---------- */
+  .xf-rail{margin:2px 0 20px;}
+  .xf-railline{stroke:var(--atk); stroke-width:2.5;}
+  .xf-token{fill:var(--atk);}
+  .xf-lane-seg{fill:var(--code-bg); transition:fill .5s, fill-opacity .5s;}
+  .xf-lane-seg.xf-lit.xf-seen{fill:var(--def); fill-opacity:.16;}
+  .xf-lane-seg.xf-lit.xf-faint{fill:var(--def); fill-opacity:.07;}
+  .xf-lane-edge{fill:none; stroke:var(--line);}
+  .xf-step{cursor:pointer;}
+  .xf-step:focus{outline:none;}
+  .xf-hit{fill:transparent;}
+  .xf-station{fill:var(--ink); stroke:var(--line); stroke-width:2; transition:stroke .4s, fill .3s;}
+  .xf-snum{fill:var(--muted-dim); letter-spacing:.02em; transition:fill .3s;}
+  .xf-slabel{font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:13.5px; fill:var(--muted-dim); transition:fill .3s;}
+  .xf-drop{stroke-dasharray:3 4; stroke-width:1.4; opacity:.25; transition:opacity .4s;}
+  .xf-step.xf-reached .xf-station{stroke:var(--atk);}
+  .xf-step.xf-reached .xf-snum{fill:var(--atk);}
+  .xf-step.xf-reached .xf-slabel{fill:var(--muted);}
+  .xf-step.xf-reached .xf-drop{opacity:1;}
+  .xf-step.xf-on .xf-station{fill:var(--atk);}
+  .xf-step.xf-on .xf-snum{fill:var(--ink);}
+  .xf-step.xf-on .xf-slabel,.xf-step:hover .xf-slabel{fill:var(--fg);}
+  .xf-step:focus-visible .xf-station{stroke:var(--amber); stroke-width:3.5;}
+  .xf-seen .xf-drop{stroke:var(--def);}
+  .xf-faint .xf-drop{stroke:var(--def); stroke-opacity:.45;}
+  .xf-blind .xf-drop{stroke:var(--muted-dim); stroke-opacity:.7;}
+  .xf-mkg{opacity:0; transition:opacity .35s;}
+  .xf-mkg.xf-on{opacity:1;}
+  .xf-mk.xf-seen{fill:var(--def);}
+  .xf-mk.xf-faint{fill:var(--panel); stroke:var(--def); stroke-width:1.6; stroke-dasharray:2.5 2.5;}
+  .xf-mk.xf-blind{fill:var(--code-bg); stroke:var(--muted-dim); stroke-width:1.6;}
+  .xf-slash{stroke:var(--muted-dim); stroke-width:1.6;}
+  .xf-vlabel{font-size:9.5px; letter-spacing:.12em;}
+  .xf-seen .xf-vlabel{fill:var(--def);}
+  .xf-faint .xf-vlabel{fill:var(--def); fill-opacity:.75;}
+  .xf-blind .xf-vlabel{fill:var(--muted-dim);}
+  .xf-legend{display:flex; flex-wrap:wrap; gap:6px 20px; margin-top:10px; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; color:var(--muted);}
+  .xf-legend span{display:flex; align-items:center; gap:7px;}
+  .xf-lg{width:12px; height:12px; border-radius:50%; display:inline-block;}
+  .xf-lg.xf-seen{background:var(--def);}
+  .xf-lg.xf-faint{border:1.5px dashed var(--def);}
+  .xf-lg.xf-blind{border:1.5px solid var(--muted-dim); background:linear-gradient(135deg,transparent 45%,var(--muted-dim) 45%,var(--muted-dim) 58%,transparent 58%);}
+  ol.chain li{transition:background-color .3s;}
+  ol.chain li.xf-now{background:linear-gradient(90deg,rgba(224,106,106,.10),transparent 70%); border-radius:8px;}
+  ol.chain li.xf-now::before{background:var(--atk); color:var(--ink);}
 </style>
 </head>
 <body>
@@ -318,7 +363,7 @@
     <h2>How to read a card</h2>
     <p><span class="k y">Why this case</span> — what the case teaches and why it was chosen. <span class="k y">Concepts first</span> — the building blocks explained for a programmer, so nothing later is magic. <span class="k y">The story</span> — the incident in plain language.</p>
     <p><span class="k a">ATT&CK chips</span> — between the story and the attack chain sits a row of chips such as <b>T1558.003 Kerberoasting</b>. <b>MITRE ATT&CK</b> is a free public cataloge of the methods real attackers use, grouped by the attacker’s goal at each stage (its “tactics”: initial access, persistence, lateral movement, exfiltration and so on). Each method is a “technique” with an ID (<b>Txxxx</b>, with a suffix such as .003 for a more specific variant), so you can look it up at attack.mitre.org and compare it with what your tools claim to detect. Phone and industrial cases use ATT&CK’s separate Mobile and ICS cataloges, and the AI cases use <b>MITRE ATLAS</b>, the equivalent cataloge for attacks on AI systems (IDs beginning AML.); those chips carry a label saying so.</p>
-    <p><span class="k a">Attack chain</span> — each numbered step shows the ATT&CK phase, what the attacker did, <b>why</b> they did it that way, the tool, and the <b>trace</b> it left in telemetry. <b>Telemetry</b> is everything your systems record about what happens on them (logs, process and network events, cloud audit trails); the trace is the specific record this step leaves there, which is what a detection can key on. Detail stays at published-threat-intelligence depth: enough to understand and detect, never a how-to.</p>
+    <p><span class="k a">Attack chain</span> — each numbered step shows the ATT&CK phase, what the attacker did, <b>why</b> they did it that way, the tool, and the <b>trace</b> it left in telemetry. <b>Telemetry</b> is everything your systems record about what happens on them (logs, process and network events, cloud audit trails); the trace is the specific record this step leaves there, which is what a detection can key on. Above the list, a <b>rail</b> replays the chain by itself: the attacker’s dot moves from step to step, and each step’s trace drops into a telemetry lane, shown solid where the step leaves a trace, dashed where the trace is hard to see, and crossed out where it leaves none. Detail stays at published-threat-intelligence depth: enough to understand and detect, never a how-to.</p>
     <p><span class="k d">Defense</span> — five blocks with reasoning: <b>Detection</b> (the signal and why it is the right one), <b>Tooling</b> (which product category sees it and why), <b>Investigation</b> (steps and why in that order), <b>Response</b> (contain, eradicate, recover, and why), <b>Hardening</b> (what would have prevented it, and the trade-off).</p>
     <p><span class="k d">Detection in practice</span> — the detection engineering for that case, in the format that fits the data source: <b>Sigma</b> for logs (a vendor-neutral YAML rule format that converts into the query language of your SIEM, the central platform that collects logs and runs rules over them), <b>YARA</b> for files (patterns of strings and bytes that recognize a malware file), <b>KQL</b> for Microsoft Sentinel / Defender hunting (the query language of Microsoft’s security tools), <b>Falco</b> for containers (rules over what Linux processes do at runtime), and <b>shell / MVT</b> for inventory and forensics (plain commands that answer “do we run the vulnerable version?”, and the Mobile Verification Toolkit, which checks a phone backup for spyware traces). These are <b>starting points, not drop-in production rules</b>: each one carries the logic of the detection, but field names, thresholds and exclusions depend on your environment. Every one needs baselining and false-positive tuning first. Your <b>baseline</b> is what normal activity looks like on your systems; a <b>false positive</b> is an alert on harmless activity; to <b>tune</b> a rule is to add exclusions and adjust thresholds until false positives are rare enough that each alert still gets a serious look, re-testing each time that the rule still catches the attack. Run a new rule in audit mode first (it records matches without alerting anyone). Atomic indicators (specific IPs, file hashes, domains) are trivial for an attacker to change, so they rotate; prefer the behavioral logic. Several cases are deliberately <em>not</em> a SIEM rule and say so: xz-utils and Heartbleed are dependency inventory, Rapid Reset is defended at the CDN edge, Pegasus is mobile forensics, the insider case is behavioral analytics, the deepfake case is a finance control. Heartbleed is <em>undetectable by construction</em>, so its card shows what to do when no rule can help.</p>
     <p><span class="k y">Deep dives</span> — two cards carry a full worked method inside them. <a href="#blue-loop">Card 10</a> builds one detection end to end (the <b>blue loop</b>: hypothesis, emulation with Atomic Red Team, tuning v1→v4, measuring, documenting). <a href="#red-loop">Card 12</a> runs the offensive mirror (the <b>red / purple loop</b>: authorized adversary emulation and evasion, every concept paired with its defensive counter).</p>
@@ -3091,6 +3136,102 @@ const XF = (() => {
 })();
 /* ---------- /explainer ---------- */
 
+// ---------- figure: the attack-chain rail (every card, built the first time the card opens) ----------
+// Stations come from each chain step's ph; each step's trace drops into the telemetry lane, drawn by its
+// vis field ('seen' by default, 'faint' or 'blind'). The matching <li> of the chain list gets xf-now.
+function mountRail(det, e, n) {
+  const {S, text, lines, wrap, wire, ease, seg, at, SHAPES, explainer} = XF;
+  const host = det.querySelector('.xf-rail'), list = [...det.querySelectorAll('ol.chain > li')];
+  const LBL = {seen: 'TRACE', faint: 'FAINT', blind: 'NO TRACE'};
+  const pad = k => String(k).padStart(2, '0');
+  const stage = document.createElement('div'), bar = document.createElement('div'), legend = document.createElement('div');
+  legend.className = 'xf-legend'; legend.setAttribute('aria-hidden', 'true');
+  legend.innerHTML = '<span><i class="xf-lg xf-seen"></i>leaves a trace</span><span><i class="xf-lg xf-faint"></i>hard to see</span><span><i class="xf-lg xf-blind"></i>no trace at this step</span>';
+  host.append(stage, bar, legend);
+  const steps = e.chain.map(c => ({ph: c.ph, v: c.vis || 'seen'})), N = steps.length, clip = `xf-lane-clip-${n}`;
+  const label = 'The attack chain of this case, step by step, and the trace each step leaves in telemetry';
+  let vert = stage.clientWidth < 620, inst = null, G = null;
+  const now = k => list.forEach((li, j) => li.classList.toggle('xf-now', j === k));
+  const markG = (x, y, v, ly) => S('g', {class: 'xf-mkg'},
+    v === 'seen' ? S('circle', {cx: x, cy: y, r: 7, class: 'xf-mk xf-seen', filter: 'url(#xf-glow)'})
+      : v === 'faint' ? S('circle', {cx: x, cy: y, r: 7, class: 'xf-mk xf-faint'})
+      : [S('circle', {cx: x, cy: y, r: 7, class: 'xf-mk xf-blind'}), S('line', {x1: x - 4.5, y1: y + 4.5, x2: x + 4.5, y2: y - 4.5, class: 'xf-slash'})],
+    text(x, ly, LBL[v], 'xf-mono xf-vlabel', {'text-anchor': 'middle'}));
+  function draw() {
+    const g = {}; let svg;
+    if (!vert) {
+      const W = 1000, H = 256, mx = 130, ry = 86, l0 = 150, l1 = 216, my = 180;
+      const xs = steps.map((_, i) => N === 1 ? W / 2 : mx + i * (W - 2 * mx) / (N - 1));
+      Object.assign(g, {start: [80, ry], end: [W - 44, ry], st: xs.map(x => [x, ry]), mk: xs.map(x => [x, my]), from: xs.map(x => [x, ry + 18])});
+      svg = S('svg', {viewBox: `0 0 ${W} ${H}`, role: 'group', 'aria-label': label},
+        S('defs', {}, S('clipPath', {id: clip}, S('rect', {x: 80, y: l0, width: W - 120, height: l1 - l0, rx: 10}))));
+      g.segs = steps.map((s, i) => { const a = i ? (xs[i - 1] + xs[i]) / 2 : 80, b = i < N - 1 ? (xs[i] + xs[i + 1]) / 2 : W - 40;
+        return S('rect', {x: a, y: l0, width: b - a, height: l1 - l0, class: `xf-lane-seg xf-${s.v}`}); });
+      svg.append(S('g', {'clip-path': `url(#${clip})`}, g.segs), S('rect', {x: 80, y: l0, width: W - 120, height: l1 - l0, rx: 10, class: 'xf-lane-edge'}),
+        text(80, l1 + 28, 'TELEMETRY · WHAT EACH STEP LEAVES FOR DEFENDERS', 'xf-mono', {style: 'fill:var(--def)'}),
+        S('line', {x1: 80, y1: ry, x2: W - 36, y2: ry, class: 'xf-railline', 'marker-end': 'url(#xf-ah-atk)'}),
+        text(14, ry + 4, 'ATTACK', 'xf-mono', {style: 'fill:var(--atk)'}));
+      g.groups = steps.map((s, i) => { const x = xs[i], ls = wrap(s.ph, 22), m = markG(x, my, s.v, my + 24);
+        const grp = S('g', {class: `xf-step xf-${s.v}`, tabindex: 0, role: 'button', 'aria-label': `Step ${i + 1}: ${s.ph}`},
+          S('rect', {x: x - 90, y: 0, width: 180, height: l1, class: 'xf-hit'}),
+          lines(x, 60 - (ls.length - 1) * 17, ls, 17, 'xf-slabel', {'text-anchor': 'middle'}),
+          S('line', {x1: x, y1: ry + 16, x2: x, y2: my - 11, class: 'xf-drop'}),
+          S('circle', {cx: x, cy: ry, r: 15, class: 'xf-station'}), text(x, ry + 4, pad(i + 1), 'xf-mono xf-snum', {'text-anchor': 'middle'}), m);
+        grp.mark = m; svg.append(grp); return grp; });
+    } else {
+      const W = 380, top = 44, row = 112, H = top + N * row + 8, rx = 40, lx0 = 252, lx1 = 352, mx = 302;
+      const ys = steps.map((_, i) => top + 48 + i * row);
+      Object.assign(g, {start: [rx, top], end: [rx, H - 10], st: ys.map(y => [rx, y]), mk: ys.map(y => [mx, y]), from: ys.map(y => [216, y])});
+      svg = S('svg', {viewBox: `0 0 ${W} ${H}`, role: 'group', 'aria-label': label},
+        S('defs', {}, S('clipPath', {id: clip}, S('rect', {x: lx0, y: top, width: lx1 - lx0, height: H - top - 8, rx: 10}))));
+      g.segs = steps.map((s, i) => { const a = i ? (ys[i - 1] + ys[i]) / 2 : top, b = i < N - 1 ? (ys[i] + ys[i + 1]) / 2 : H - 8;
+        return S('rect', {x: lx0, y: a, width: lx1 - lx0, height: b - a, class: `xf-lane-seg xf-${s.v}`}); });
+      svg.append(S('g', {'clip-path': `url(#${clip})`}, g.segs), S('rect', {x: lx0, y: top, width: lx1 - lx0, height: H - top - 8, rx: 10, class: 'xf-lane-edge'}),
+        text(rx, 24, 'ATTACK', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--atk)'}),
+        text(mx, 24, 'TELEMETRY', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--def)'}),
+        S('line', {x1: rx, y1: top, x2: rx, y2: H - 6, class: 'xf-railline', 'marker-end': 'url(#xf-ah-atk)'}));
+      g.groups = steps.map((s, i) => { const y = ys[i], ls = wrap(s.ph, 16), m = markG(mx, y, s.v, y + 26);
+        const grp = S('g', {class: `xf-step xf-${s.v}`, tabindex: 0, role: 'button', 'aria-label': `Step ${i + 1}: ${s.ph}`},
+          S('rect', {x: 0, y: y - row / 2, width: W, height: row, class: 'xf-hit'}),
+          lines(rx + 26, y + 5 - (ls.length - 1) * 8.5, ls, 17, 'xf-slabel'),
+          S('line', {x1: 214, y1: y, x2: mx - 11, y2: y, class: 'xf-drop'}),
+          S('circle', {cx: rx, cy: y, r: 15, class: 'xf-station'}), text(rx, y + 4, pad(i + 1), 'xf-mono xf-snum', {'text-anchor': 'middle'}), m);
+        grp.mark = m; svg.append(grp); return grp; });
+    }
+    g.token = S('circle', {r: 6.5, class: 'xf-token', filter: 'url(#xf-glow)'});
+    g.layer = S('g'); svg.append(g.layer, g.token);
+    g.svg = svg; return g;
+  }
+  function build() {
+    inst?.destroy();
+    G = draw(); stage.replaceChildren(G.svg);
+    G.groups.forEach((grp, i) => wire(grp, () => { inst.settle(i); inst.pause(); }));
+    const lerp = (a, b, q) => [a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q];
+    const mark = k => { G.groups.forEach((grp, j) => grp.classList.toggle('xf-on', j === k)); now(k); };
+    const beats = steps.map((s, k) => ({dur: 4600,
+      cues: [[.26, () => { G.groups[k].classList.add('xf-reached'); mark(k); }],
+        [.32, sc => {
+          const land = () => { G.groups[k].mark.classList.add('xf-on'); G.segs[k].classList.add('xf-lit'); };
+          if (s.v === 'blind') sc.spawn({shape: SHAPES.pill('muted-dim'), from: G.from[k], to: G.mk[k], dur: 1300, fade: 'ghost', onDone: land});
+          else { const pill = SHAPES.pill('def'); if (s.v === 'faint') pill.setAttribute('opacity', '.5');
+            sc.spawn({shape: S('g', {}, pill), from: G.from[k], to: G.mk[k], dur: 950, onDone: land}); }
+        }]],
+      tick: p => { at(G.token, ...lerp(k ? G.st[k - 1] : G.start, G.st[k], ease(seg(p, 0, .26)))); G.token.style.opacity = 1; }}));
+    beats.push({dur: 1400, tick: p => { const q = ease(p); at(G.token, ...lerp(G.st[N - 1], G.end, q)); G.token.style.opacity = String(1 - q); }});
+    inst = explainer(stage, {
+      name: `rail-${n}`, bar, layer: G.layer, captions: false, hold: 1400, beats,
+      reset() {
+        G.groups.forEach(grp => { grp.classList.remove('xf-reached', 'xf-on'); grp.mark.classList.remove('xf-on'); });
+        G.segs.forEach(r => r.classList.remove('xf-lit')); at(G.token, ...G.start); G.token.style.opacity = 1; now(-1);
+      },
+      rest: x => { x.settle(beats.length - 1); mark(-1); },
+    });
+  }
+  build();
+  new ResizeObserver(([en]) => { const v = en.contentRect.width < 620; if (v !== vert) { vert = v; build(); } }).observe(stage);
+  return {rebuild(v) { vert = v; build(); }};
+}
+
 // render surface filter chips
 const keyrow = document.getElementById('keyrow');
 let activeFilter = null;
@@ -3144,6 +3285,7 @@ EX.forEach((e,i)=>{
       <div class="seg">
         <p class="seg-h atk">Attack chain</p>
         <p class="seg-sub">Each step: what happened, <b>why</b> the attacker did it that way, the <b>tool</b>, and the <b>trace</b> it left for defenders.</p>
+        <div class="xf-rail" id="xf-rail-${i+1}"></div>
         <ol class="chain">${chain}</ol>
       </div>
 
@@ -3174,8 +3316,8 @@ EX.forEach((e,i)=>{
       <div class="cites"><p class="cl">PRIMARY SOURCES</p><ul>${cites}</ul></div>
     </div>`;
   cards.appendChild(det);
-  // term tooltips are added the first time a card (or the deep dive inside it) is opened
-  det.addEventListener('toggle',()=>{ if(det.open) TermTips.annotate(det.querySelector('.body')); });
+  // term tooltips are added, and the attack-chain rail is built, the first time a card (or the deep dive inside it) is opened
+  det.addEventListener('toggle',()=>{ if(!det.open) return; TermTips.annotate(det.querySelector('.body')); if(!det.xfRail) det.xfRail=mountRail(det,e,i+1); });
   det.querySelectorAll('.deep').forEach(d=>d.addEventListener('toggle',()=>{ if(!d.open) return;
     const doc=d.querySelector('.loopdoc'); doc.removeAttribute('data-tt-skip'); TermTips.annotate(doc); }));
 });
