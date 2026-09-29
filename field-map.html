@@ -223,6 +223,29 @@
   .xf-btn{background:none; border:1px solid var(--line); color:var(--muted); font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.05em; padding:6px 12px; border-radius:7px; cursor:pointer;}
   .xf-btn:hover,.xf-btn:focus-visible{color:var(--fg); border-color:var(--muted-dim); outline:none;}
   @media (prefers-reduced-motion: reduce){ .xf-node.xf-ping .xf-halo{animation:none;} }
+  .found{grid-auto-flow:row dense;}
+  .xf-pnode{opacity:0; transition:opacity .45s;}
+  .xf-pnode.xf-on{opacity:1;}
+  .xf-pnode rect{fill:var(--panel-2); stroke:var(--line); stroke-width:1.2; transition:stroke .3s, stroke-width .3s;}
+  .xf-pnode.xf-bad rect{stroke:var(--atk);}
+  .xf-pnode.xf-flag rect{stroke:var(--amber); stroke-width:2.2;}
+  .xf-pname{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12.5px; fill:var(--fg);}
+  .xf-conn{fill:none; stroke:var(--muted-dim); stroke-width:1.5; stroke-dasharray:1; stroke-dashoffset:1; transition:stroke-dashoffset .7s ease, stroke .3s, stroke-width .3s;}
+  .xf-conn.xf-on{stroke-dashoffset:0;}
+  .xf-conn.xf-bad{stroke:var(--atk);}
+  .xf-conn.xf-flag{stroke:var(--amber); stroke-width:2.6;}
+  .xf-row rect{fill:var(--panel-2); stroke:var(--line-soft); transition:stroke .3s;}
+  .xf-row.xf-flag rect{stroke:var(--amber); stroke-width:1.6;}
+  .xf-r1{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10px; letter-spacing:.1em; fill:var(--def);}
+  .xf-r1.xf-bad{fill:var(--atk);}
+  .xf-r2{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12.5px; fill:var(--fg); white-space:pre;}
+  .xf-lane-flow{fill:none; stroke:var(--def); stroke-width:1.8; stroke-dasharray:5 9; opacity:0; transition:opacity .4s;}
+  .xf-open .xf-lane-flow{opacity:1; animation:xf-flow .8s linear infinite;}
+  .xf-flow-l{opacity:0; transition:opacity .4s;}
+  .xf-open .xf-flow-l{opacity:1;}
+  @keyframes xf-flow{to{stroke-dashoffset:-14;}}
+  .xf-track2{fill:none; stroke:var(--line); stroke-width:1.2; stroke-dasharray:2 5;}
+  @media (prefers-reduced-motion: reduce){ .xf-open .xf-lane-flow{animation:none;} }
 </style>
 </head>
 <body>
@@ -392,7 +415,8 @@ const FOUND=[
   'encoding vs hashing vs encryption · hash · salt · cracking · TLS · certificate · certificate authority (CA) · code signing · public / private key · token signing key'],
  ['var(--ok)','Telemetry: the logs everything leaves behind','An event is one structured record of one thing that happened (a login, a process start, an API call): a timestamp plus who, what, and where. A log is a stream of events from one source; telemetry is all of it, collected centrally; an alert is something else, a detection rule’s claim that certain events deserve a human’s attention.</p><p>Almost every action a computer takes can be recorded: Windows event logs (each event type has a numeric ID: successful login 4624, Kerberos service ticket requested 4769, new service installed 7045), process trees from EDR or from Sysmon (Microsoft’s free System Monitor, which writes process, network, and file events into the Windows event log), DNS queries, NetFlow (who talked to whom, how much), web-proxy logs (the URLs staff machines request on their way out) and web-server access logs, cloud audit logs, identity-provider sign-in logs, email audit logs. Telemetry is the raw material of every detection. The most common reason a detection fails is not clever attackers but a log that was never collected or never forwarded. Forwarding means shipping each source’s logs to the central store where the rules run (the SIEM, Security Information and Event Management system, covered in the stack below); retention is how long they are kept, and since intrusions are often discovered months late, thirty days of logs cannot say when one began.',
   'Telemetry is structured logging for the whole company, shipped to one place. "Do we even collect this?" is the first question a detection engineer asks, exactly like checking whether the metric exists before writing the alert.',
-  'event log · Sysmon · EDR telemetry · NetFlow · DNS logs · audit log · log forwarding · retention'],
+  'event log · Sysmon · EDR telemetry · NetFlow · DNS logs · audit log · log forwarding · retention',
+  ['proc','login']],
  ['var(--purple)','Detection: signatures versus behaviors','A signature matches something known: a file hash, a domain, a byte pattern, a specific request string. Such known-bad values are called indicators of compromise (IOCs). A signature is precise and cheap, and it stops working the moment the attacker changes the artifact. A behavioral detection matches what the activity <em>does</em>: a process reading the browser’s password store, one account requesting hundreds of service tickets in a minute, a server initiating an LDAP connection to the internet (what Log4Shell #4 makes its victim do). The attacker habits such rules describe are called TTPs (tactics, techniques, and procedures), and they are far harder to change than a file or a domain. The trade-off is noise: behaviors also occur legitimately, so every behavioral rule needs tuning against your own environment. A true positive is a real attack; a false positive is an alert on benign activity; the share of a rule’s alerts that are true positives is its precision. A false negative is an attack the rule missed, and a baseline is a record of what normal looks like in your environment, against which thresholds are set.',
   'A signature is an equality check or fixed pattern match against a known value; a behavioral rule is a query over an event stream that describes an action pattern, sometimes with a count threshold (learning a baseline and flagging deviation from it is a third thing, UEBA (user and entity behavior analytics), covered in the stack below). Detection engineering is writing those queries, testing them against real emulated attacks, and tuning the threshold until the alert volume is something a human can act on.',
   'signature · IOC · behavior · TTP · rule · alert · true / false positive · precision · baseline · tuning'],
@@ -403,6 +427,16 @@ const FOUND=[
   'Threat modeling is what you do in a design review when you ask "what can go wrong here?" The STRIDE mnemonic (Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, Elevation of privilege) is a checklist for that question.',
   'asset · threat · vulnerability · risk · impact · attack surface · assume breach · Zero Trust · blast radius · defense in depth'],
 ];
+
+// Figures that follow a Foundations card: FOUND's optional 6th element lists their ids.
+const FOUND_FIGS={
+ proc:{kick:'See it move · telemetry', title:'One process starts another',
+  claim:'Every program start becomes an event with its parent attached. That parent is what gives an attack away.',
+  cap:'Process-creation events come from an EDR agent, from Sysmon (Event ID 1) or from Windows Security Event 4688. The address 203.0.113.7 is from a range reserved for documentation.'},
+ login:{kick:'See it move · telemetry', title:'A remote login leaves two records',
+  claim:'A login is a conversation between three machines, and two of them write it down. The SIEM puts the two records back together.',
+  cap:'Event 4769 (a Kerberos service ticket was requested) is written on the domain controller; it is the same event the Kerberoasting card in the codex detects on. Event 4624 (a successful logon) is written on the server being logged in to.'},
+};
 
 // ---------- 02 TACTICS ----------
 const TACTICS=[
@@ -850,7 +884,7 @@ const TERMS=[
 
 // ---------- render ----------
 const $=id=>document.getElementById(id);
-$('found-g').innerHTML=FOUND.map((f,i)=>`<div class="fc" style="--c:${f[0]}"><div class="fn">BLOCK ${String(i+1).padStart(2,'0')}</div><div class="ft">${f[1]}</div><p>${f[2]}</p><div class="dev"><b>FOR A PROGRAMMER</b> ${f[3]}</div><div class="terms"><b>Terms:</b> ${f[4]}</div></div>`).join('');
+$('found-g').innerHTML=FOUND.map((f,i)=>`<div class="fc" style="--c:${f[0]}"><div class="fn">BLOCK ${String(i+1).padStart(2,'0')}</div><div class="ft">${f[1]}</div><p>${f[2]}</p><div class="dev"><b>FOR A PROGRAMMER</b> ${f[3]}</div><div class="terms"><b>Terms:</b> ${f[4]}</div></div>`+(f[5]||[]).map(id=>{const g=FOUND_FIGS[id];return `<figure class="xf-fig" id="xf-${id}-fig" style="grid-column:1/-1"><p class="xf-kick">${g.kick}</p><h3 class="xf-h">${g.title}</h3><p class="xf-claim">${g.claim}</p><div class="xf-scroll" id="xf-${id}"></div><div id="xf-${id}-bar"></div><figcaption>${g.cap}</figcaption></figure>`;}).join('')).join('');
 $('spine').innerHTML=TACTICS.map((t,i)=>`<div class="tac"><div class="tn">${t[0]} · ${String(i+1).padStart(2,'0')}</div><div class="tt">${t[1]}</div><p>${t[2]}</p><div class="log"><b>In the logs:</b> ${t[3]}</div><div class="see">Codex: <b>${t[4]}</b></div></div>`).join('');
 $('surfaces-g').innerHTML=SURF.map(s=>`<div class="card" style="--c:${s[0]}"><p class="ct">${s[1]}</p><p>${s[2]}</p><p class="row"><b>Way in</b> ${s[3]}</p><p class="row"><b>Defended by</b> ${s[4]}</p><p class="eg">Codex: <b>${s[5]}</b></p></div>`).join('');
 $('stack-g').innerHTML=STACK.map(l=>`<div class="layer"><div class="layer-h">${l[0]}</div><p class="layer-d">${l[1]}</p><div class="prods">${l[2].map(p=>`<div class="prod"><div class="pn">${p[0]} <span class="ab">${p[1]}</span></div><p>${p[2]}</p><p class="kv"><b>Looks at</b> ${p[3]}</p><p class="kv"><b>Alert</b> ${p[4]}</p><p class="kv"><b>Fails when</b> ${p[5]}</p><span class="ex">e.g. ${p[6]}</span></div>`).join('')}</div></div>`).join('');
@@ -1160,6 +1194,113 @@ const XF = (() => {
         [.05, sc => sc.spawn({shape: SHAPES.dot('purple', 5), from: [990, 386], to: [756, 386], dur: 1500,
           onDone: () => sc.spawn({shape: SHAPES.pill('purple'), from: [756, 256], to: [756, 214], dur: 1100,
             onDone: () => { tag.textContent = 'RULE TESTED ✓'; tag.style.fill = 'var(--purple)'; tag.classList.add('xf-on'); sc.flash(R[0], 'xf-hotp'); }})})]]},
+    ],
+  });
+})();
+
+// ---------- figure: one process starts another (after Foundations block 09) ----------
+(() => {
+  const {S, text, lines, SHAPES, explainer} = XF;
+  const host = document.getElementById('xf-proc');
+  const svg = S('svg', {viewBox: '0 0 1000 440', role: 'img', 'aria-label': 'A process tree: explorer starts Outlook, Outlook starts Word, Word starts PowerShell, and PowerShell connects to a server on the internet; the EDR sends each start and the connection to the SIEM as an event, and a rule flags Word as the parent of PowerShell.'});
+  svg.append(text(20, 22, 'LAPTOP · WS-042 · EDR AGENT RUNNING', 'xf-mono', {style: 'fill:var(--muted-dim)'}),
+    S('rect', {x: 20, y: 34, width: 430, height: 392, rx: 12, style: 'fill:var(--ink);stroke:var(--line)'}),
+    text(600, 22, 'EDR · EVENTS SENT TO THE SIEM', 'xf-mono', {style: 'fill:var(--def)'}),
+    S('rect', {x: 600, y: 34, width: 380, height: 392, rx: 12, style: 'fill:var(--code-bg,#0A0E13);stroke:var(--line)'}));
+  const P = [['explorer.exe', 40, 64], ['outlook.exe', 80, 144], ['winword.exe', 120, 224], ['powershell.exe', 160, 304]];
+  const conns = P.slice(1).map(([, x, y], k) => { const [, px, py] = P[k];
+    return S('path', {d: `M${px + 22} ${py + 34}V${y + 17}H${x}`, pathLength: 1, class: 'xf-conn' + (k === 2 ? ' xf-bad' : '')}); });
+  const nodes = P.map(([n, x, y], k) => S('g', {class: 'xf-pnode' + (k ? '' : ' xf-on') + (k === 3 ? ' xf-bad' : '')},
+    S('rect', {x, y, width: 168, height: 34, rx: 7}), text(x + 14, y + 22, n, 'xf-pname')));
+  svg.append(...conns, ...nodes);
+  const net = S('path', {d: 'M328 321H514', pathLength: 1, class: 'xf-conn xf-bad'});
+  svg.append(net, S('g', {}, S('circle', {cx: 540, cy: 321, r: 24, style: 'fill:var(--panel-2);stroke:var(--muted-dim)'}),
+    S('ellipse', {cx: 540, cy: 321, rx: 10, ry: 24, style: 'fill:none;stroke:var(--muted-dim)'}),
+    S('line', {x1: 516, y1: 321, x2: 564, y2: 321, style: 'stroke:var(--muted-dim)'}),
+    text(540, 366, 'INTERNET', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--muted-dim);font-size:9.5px'}),
+    text(540, 284, '203.0.113.7', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--muted);font-size:10px'})));
+  const ROWS = [['4688 · PROCESS CREATED', 'outlook.exe    parent: explorer.exe'], ['4688 · PROCESS CREATED', 'winword.exe    parent: outlook.exe'],
+    ['4688 · PROCESS CREATED', 'powershell.exe parent: winword.exe', 1], ['NETWORK CONNECTION', 'powershell.exe → 203.0.113.7:443', 1]];
+  const rowY = k => 52 + k * 60;
+  const rows = ROWS.map(([a, b, bad], k) => S('g', {class: 'xf-row xf-show'}, S('rect', {x: 614, y: rowY(k), width: 352, height: 48, rx: 6}),
+    text(630, rowY(k) + 19, a, 'xf-r1' + (bad ? ' xf-bad' : '')), text(630, rowY(k) + 37, b, 'xf-r2')));
+  const alert = S('g', {class: 'xf-show'}, S('rect', {x: 614, y: 300, width: 352, height: 56, rx: 8, style: 'fill:rgba(228,166,78,.08);stroke:var(--amber);stroke-width:1.6'}),
+    text(630, 322, 'ALERT · ODD PARENT', 'xf-mono', {style: 'fill:var(--amber);font-size:10.5px'}),
+    text(630, 344, 'Word started PowerShell', 'xf-bt', {style: 'font-size:14px'}));
+  svg.append(...rows, alert,
+    lines(616, 388, ['RULE  parent is an Office app (Word, Excel, Outlook)', '      AND child is a shell (PowerShell, cmd)'], 16, 'xf-mono', {style: 'fill:var(--muted-dim);font-size:10px;letter-spacing:.02em;white-space:pre'}));
+  const layer = S('g'); svg.append(layer);
+  host.append(svg);
+  let netOpen = false, acc = 0;
+  const grow = k => { conns[k - 1].classList.add('xf-on'); nodes[k].classList.add('xf-on'); };
+  const toRow = (k, from, c) => sc => sc.spawn({shape: SHAPES.pill(c), from, to: [632, rowY(k) + 24], ctrl: [(from[0] + 632) / 2, from[1] - 90], dur: 1300, onDone: () => rows[k].classList.add('xf-on')});
+  explainer(host, {
+    name: 'proc', bar: document.getElementById('xf-proc-bar'), layer, hold: 2200,
+    reset() {
+      netOpen = false; nodes.slice(1).forEach(n => n.classList.remove('xf-on')); [...conns, net].forEach(c => c.classList.remove('xf-on'));
+      [conns[2], nodes[2], nodes[3], rows[2]].forEach(e => e.classList.remove('xf-flag')); [...rows, alert].forEach(r => r.classList.remove('xf-on'));
+    },
+    ambient(dt, sc) { if (netOpen && (acc += dt) > 600) { acc = 0; sc.spawn({shape: SHAPES.dot('atk', 3), from: [332, 321], to: [514, 321], dur: 850}); } },
+    beats: [
+      {dur: 3800, cap: 'Alice opens Outlook. Windows starts it as a child of explorer.exe, her desktop.', cues: [[.05, () => grow(1)], [.3, toRow(0, [248, 161], 'def')]]},
+      {dur: 3800, cap: 'She opens the attached document, so Outlook starts Word.', cues: [[.05, () => grow(2)], [.3, toRow(1, [288, 241], 'def')]]},
+      {dur: 4200, cap: 'A macro inside the document makes Word start PowerShell.', cues: [[.05, () => grow(3)], [.3, toRow(2, [328, 321], 'atk')]]},
+      {dur: 4400, cap: 'PowerShell opens a connection to a server on the internet. The EDR records that too.', cues: [
+        [.05, () => { net.classList.add('xf-on'); netOpen = true; }], [.35, toRow(3, [420, 321], 'atk')]]},
+      {dur: 5400, cap: 'A rule flags the odd pair: Word should never be the parent of PowerShell.', cues: [
+        [.05, () => [conns[2], nodes[2], nodes[3], rows[2]].forEach(e => e.classList.add('xf-flag'))], [.3, () => alert.classList.add('xf-on')]]},
+    ],
+  });
+})();
+
+// ---------- figure: a remote login leaves two records (after Foundations block 09) ----------
+(() => {
+  const {S, text, SHAPES, explainer} = XF;
+  const host = document.getElementById('xf-login');
+  const svg = S('svg', {viewBox: '0 0 1000 460', role: 'img', 'aria-label': 'A remote login: the laptop asks the domain controller for a ticket to the file server, gets it back, presents it to the server, and a two-way session opens; the domain controller logs event 4769, the server logs event 4624, and the SIEM joins the two records.'});
+  const machine = (x, y, w, title, sub, kind) => {
+    const g = S('g', {}, S('rect', {x, y, width: w, height: 76, rx: 10, class: 'xf-bx', style: 'stroke:var(--line)'}));
+    if (kind === 'laptop') g.append(S('rect', {x: x + 18, y: y + 22, width: 30, height: 20, rx: 2, style: 'fill:none;stroke:var(--muted)'}), S('line', {x1: x + 12, y1: y + 47, x2: x + 54, y2: y + 47, style: 'stroke:var(--muted);stroke-width:2'}));
+    else [0, 1, 2].forEach(k => g.append(S('rect', {x: x + 18, y: y + 18 + k * 13, width: 30, height: 9, rx: 2, style: 'fill:none;stroke:var(--muted)'}),
+      S('circle', {cx: x + 42, cy: y + 22.5 + k * 13, r: 1.4, style: 'fill:var(--def)'})));
+    g.append(text(x + 64, y + 33, title, 'xf-bt'), text(x + 64, y + 53, sub, 'xf-mono', {style: 'fill:var(--muted);font-size:10px'}));
+    return g;
+  };
+  const lap = machine(40, 150, 200, 'Alice’s laptop', 'WS-042', 'laptop'), dc = machine(390, 24, 220, 'Domain controller', 'DC01'), srv = machine(760, 150, 200, 'File server', 'FILESRV01');
+  const session = S('g', {}, S('path', {d: 'M244 182H756', class: 'xf-lane-flow'}), S('path', {d: 'M756 196H244', class: 'xf-lane-flow'}),
+    text(500, 172, 'KEYSTROKES →', 'xf-mono xf-flow-l', {'text-anchor': 'middle', style: 'fill:var(--def);font-size:9.5px'}),
+    text(500, 216, '← SCREEN UPDATES', 'xf-mono xf-flow-l', {'text-anchor': 'middle', style: 'fill:var(--def);font-size:9.5px'}));
+  svg.append(S('path', {d: 'M150 150Q185 62 390 62', class: 'xf-track2'}), S('path', {d: 'M244 189H756', class: 'xf-track2'}), session, lap, dc, srv,
+    S('rect', {x: 40, y: 290, width: 920, height: 154, rx: 12, style: 'fill:var(--code-bg,#0A0E13);stroke:var(--line)'}),
+    text(58, 314, 'SIEM · EVERY MACHINE’S LOGS IN ONE PLACE', 'xf-mono', {style: 'fill:var(--def)'}));
+  const srow = (x, a, b) => S('g', {class: 'xf-row xf-show'}, S('rect', {x, y: 326, width: 420, height: 54, rx: 7}),
+    text(x + 16, 347, a, 'xf-r1'), text(x + 16, 368, b, 'xf-r2'));
+  const rowA = srow(60, 'DC01 · 4769 · KERBEROS SERVICE TICKET', 'account alice · for FILESRV01'),
+        rowB = srow(520, 'FILESRV01 · 4624 · SUCCESSFUL LOGON', 'account alice · from WS-042');
+  const corr = S('g', {class: 'xf-show'}, S('path', {d: 'M270 388v12h460v-12', style: 'fill:none;stroke:var(--amber);stroke-width:1.6'}),
+    text(500, 426, 'SAME ACCOUNT · SAME SERVER · SECONDS APART', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--amber)'}));
+  svg.append(rowA, rowB, corr);
+  const layer = S('g'); svg.append(layer);
+  host.append(svg);
+  const [lapR, dcR, srvR] = [lap, dc, srv].map(g => g.firstChild);
+  let acc = 0, dir = 0;
+  explainer(host, {
+    name: 'login', bar: document.getElementById('xf-login-bar'), layer, hold: 1800,
+    reset() { session.classList.remove('xf-open'); [rowA, rowB, corr].forEach(e => e.classList.remove('xf-on')); },
+    ambient(dt, sc) { if (session.classList.contains('xf-open') && (acc += dt) > 700) { acc = 0; dir ^= 1;
+      sc.spawn({shape: SHAPES.dot('def', 2.8), from: dir ? [250, 182] : [750, 196], to: dir ? [750, 182] : [250, 196], dur: 1100}); } },
+    beats: [
+      {dur: 3400, cap: 'Alice, at her laptop, starts a remote-desktop session to a file server.', cues: [[.1, sc => sc.flash(lapR)]]},
+      {dur: 4600, cap: 'First, her laptop asks the domain controller for a ticket to that server.', cues: [
+        [.05, sc => sc.spawn({shape: SHAPES.dot('amber', 4.5), from: [150, 148], to: [388, 62], ctrl: [185, 60], dur: 1300, onDone: () => sc.flash(dcR)})],
+        [.42, sc => sc.spawn({shape: SHAPES.pill('def'), from: [500, 104], to: [270, 353], ctrl: [520, 250], dur: 1500, onDone: () => rowA.classList.add('xf-on')})]]},
+      {dur: 3600, cap: 'The domain controller sends back a ticket that only that server can read.', cues: [
+        [.05, sc => sc.spawn({shape: SHAPES.ticket('amber'), from: [388, 70], to: [160, 146], ctrl: [200, 70], dur: 1600})]]},
+      {dur: 4600, cap: 'The laptop presents the ticket to the server, and the server lets her in.', cues: [
+        [.05, sc => sc.spawn({shape: SHAPES.ticket('amber'), from: [270, 189], to: [730, 189], dur: 1700, onDone: () => { sc.flash(srvR); session.classList.add('xf-open'); }})],
+        [.5, sc => sc.spawn({shape: SHAPES.pill('def'), from: [860, 230], to: [730, 353], ctrl: [880, 320], dur: 1400, onDone: () => rowB.classList.add('xf-on')})]]},
+      {dur: 4200, cap: 'The session stays open: keystrokes flow in, and screen updates flow back.'},
+      {dur: 5000, cap: 'Two machines, two logs, one story: the SIEM joins them by account, server and time.', cues: [[.1, () => corr.classList.add('xf-on')]]},
     ],
   });
 })();
