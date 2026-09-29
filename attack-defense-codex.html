@@ -344,6 +344,11 @@
   ol.chain li{transition:background-color .3s;}
   ol.chain li.xf-now{background:linear-gradient(90deg,rgba(224,106,106,.10),transparent 70%); border-radius:8px;}
   ol.chain li.xf-now::before{background:var(--atk); color:var(--ink);}
+  .xf-mini{width:46px; height:46px; flex:0 0 auto; display:block;}
+  .xf-mini-track{fill:none; stroke:var(--line); stroke-width:2;}
+  .xf-mini-arc{fill:none; stroke-width:7; stroke-linecap:round;}
+  .xf-mini-on{fill:var(--ink); stroke-width:2;}
+  .xf-mini-off{fill:var(--muted-dim);}
 </style>
 </head>
 <body>
@@ -1246,7 +1251,7 @@ AuditLogs
 
 /* ===== 10 Kerberoasting ===== */
 { surf:'identity', title:'Cracking service tickets offline', anchor:'Kerberoasting (Active Directory) · widely used',
-  deep:{id:'blue-loop', tpl:'deep-blue', cls:'blue', color:'var(--def)', kicker:'Deep dive · the blue loop',
+  deep:{id:'blue-loop', ring:[7,7], tpl:'deep-blue', cls:'blue', color:'var(--def)', kicker:'Deep dive · the blue loop',
         title:'Build this detection end to end',
         sub:'Hypothesis → telemetry check → emulate → author → validate → tune v1→v4 → measure → document → maintain. Every command and rule is here to run in a lab.'},
   attck:[['T1558.003','Kerberoasting'],['T1078','Valid Accounts'],['T1078.002','Valid Accounts: Domain Accounts'],['T1021','Remote Services']],
@@ -1356,7 +1361,7 @@ level: high`,
 
 /* ===== 12 Conti ===== */
 { surf:'endpoint', title:'Living off the land to ransomware', anchor:'Conti ransomware playbook · 2021–22',
-  deep:{id:'red-loop', tpl:'deep-red', cls:'red', color:'var(--purple)', kicker:'Deep dive · the red / purple loop',
+  deep:{id:'red-loop', ring:[5,6], tpl:'deep-red', cls:'red', color:'var(--purple)', kicker:'Deep dive · the red / purple loop',
         title:'Emulate this adversary, then close the gaps',
         sub:'Authorize → pick an adversary → plan → execute → evade (each concept with its defensive counter) → the purple-team handshake → measure coverage → report → repeat.'},
   attck:[['T1566','Phishing'],['T1059.001','PowerShell'],['T1558.003','Kerberoasting'],['T1490','Inhibit System Recovery'],['T1486','Data Encrypted for Impact']],
@@ -3232,6 +3237,22 @@ function mountRail(det, e, n) {
   return {rebuild(v) { vert = v; build(); }};
 }
 
+// ---------- figure: "you are here" mini ring on a deep dive's summary (deep.ring = [from, to]) ----------
+// The eight stages and their colors are the Field Map's loop: attack, telemetry, detection, investigate,
+// respond, emulate, find the gap, new detection.
+function miniRing([from, to]) {
+  const {S, col} = XF;
+  const C = ['atk', 'def', 'def', 'def', 'def', 'purple', 'purple', 'def'];
+  const xy = (t, r) => { const a = (-90 + t * 45) * Math.PI / 180; return [60 + r * Math.cos(a), 60 + r * Math.sin(a)]; };
+  const arc = (t1, t2, r) => { const [x1, y1] = xy(t1, r), [x2, y2] = xy(t2, r);
+    return `M${x1.toFixed(2)} ${y1.toFixed(2)}A${r} ${r} 0 ${(t2 - t1) * 45 > 180 ? 1 : 0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`; };
+  return S('svg', {viewBox: '0 0 120 120', class: 'xf-mini', 'aria-hidden': 'true'},
+    S('circle', {cx: 60, cy: 60, r: 44, class: 'xf-mini-track'}),
+    S('path', {d: arc(from - .35, to + .35, 44), class: 'xf-mini-arc', style: `stroke:${col(C[from])}`}),
+    C.map((c, i) => { const [x, y] = xy(i, 44), on = i >= from && i <= to;
+      return S('circle', {cx: x.toFixed(2), cy: y.toFixed(2), r: on ? 4.5 : 3.2, class: on ? 'xf-mini-on' : 'xf-mini-off', style: on ? `stroke:${col(c)}` : null}); }));
+}
+
 // render surface filter chips
 const keyrow = document.getElementById('keyrow');
 let activeFilter = null;
@@ -3315,6 +3336,7 @@ EX.forEach((e,i)=>{
 
       <div class="cites"><p class="cl">PRIMARY SOURCES</p><ul>${cites}</ul></div>
     </div>`;
+  if(e.deep&&e.deep.ring) det.querySelector('.deep > summary').prepend(miniRing(e.deep.ring));
   cards.appendChild(det);
   // term tooltips are added, and the attack-chain rail is built, the first time a card (or the deep dive inside it) is opened
   det.addEventListener('toggle',()=>{ if(!det.open) return; TermTips.annotate(det.querySelector('.body')); if(!det.xfRail) det.xfRail=mountRail(det,e,i+1); });
