@@ -974,6 +974,7 @@ const XF = (() => {
   function explainer(host, cfg) {
     const B = cfg.beats, layer = cfg.layer, parts = [], hold = cfg.hold ?? 1600, sc = {instant: false};
     let i = 0, t = 0, fired = 0, holdT = 0, userPaused = false, visible = false, started = false, raf = 0, last = 0, shownI = -1;
+    let rm = RM.matches;   // mirrored from the change event: reading RM.matches every frame keeps Chromium's cache fresh, so 'change' never fires
     sc.spawn = o => {
       if (sc.instant || !layer) { o.onDone?.(); return null; }
       const p = {el: o.shape, o, t: 0}; layer.append(p.el); parts.push(p); move(p, 0); return p;
@@ -1014,10 +1015,10 @@ const XF = (() => {
       } else if ((holdT += dt) >= hold) goTo(0);
       show();
     }
-    const running = () => visible && !userPaused && !document.hidden && !RM.matches;
-    function frame(now) { raf = 0; if (!running()) return; step(Math.min(50, now - last)); last = now; raf = requestAnimationFrame(frame); }
+    const running = () => visible && !userPaused && !document.hidden && !rm;
+    function frame(now) { raf = 0; if (!running()) return; step(Math.max(0, Math.min(50, now - last))); last = now; raf = requestAnimationFrame(frame); }
     function kick() { if (!raf && running()) { last = performance.now(); raf = requestAnimationFrame(frame); } }
-    function onVis(v) { visible = v; if (visible && !started && !RM.matches) { started = true; goTo(0); } kick(); }
+    function onVis(v) { visible = v; if (visible && !started && !rm) { started = true; goTo(0); } kick(); }
     // the beat bar: pause/play, one bar per beat (click to jump), the narration line
     const bar = document.createElement('div'); bar.className = 'xbar';
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'xplay';
@@ -1026,13 +1027,13 @@ const XF = (() => {
     const dots = B.map((b, k) => {
       const d = document.createElement('button'); d.type = 'button'; d.className = 'xdot';
       d.setAttribute('aria-label', `Beat ${k + 1} of ${B.length}${b.cap ? ': ' + b.cap : ''}`);
-      d.addEventListener('click', () => { started = true; if (RM.matches || userPaused) settle(k); else goTo(k); kick(); });
+      d.addEventListener('click', () => { started = true; if (rm || userPaused) settle(k); else goTo(k); kick(); });
       dotsEl.append(d); return d;
     });
     btn.addEventListener('click', () => { userPaused = !userPaused; updBtn(); kick(); });
     bar.append(btn, dotsEl); if (cfg.captions !== false) bar.append(cap);
     cfg.bar.append(bar);
-    function updBtn() { btn.hidden = RM.matches; btn.innerHTML = userPaused ? PLAY_I : PAUSE_I; btn.setAttribute('aria-label', userPaused ? 'Play the animation' : 'Pause the animation'); }
+    function updBtn() { btn.hidden = rm; btn.innerHTML = userPaused ? PLAY_I : PAUSE_I; btn.setAttribute('aria-label', userPaused ? 'Play the animation' : 'Pause the animation'); }
     function show() {
       const k = Math.min(i, B.length - 1), p = i >= B.length ? 1 : Math.min(1, t / B[i].dur);
       dots.forEach((d, j) => { d.classList.toggle('xdone', j < i); d.classList.toggle('xcur', j === i); });
@@ -1040,8 +1041,9 @@ const XF = (() => {
       if (k !== shownI) { shownI = k; cap.textContent = B[k].cap || ''; }
     }
     const rest = () => (cfg.rest ? cfg.rest(api) : settle(B.length - 1));
-    const onRM = () => { if (RM.matches) rest(); updBtn(); kick(); };
-    const io = new IntersectionObserver(([e]) => onVis(e.isIntersecting), {threshold: .3});
+    const onRM = e => { rm = e.matches; if (rm) rest(); updBtn(); kick(); };
+    const io = new IntersectionObserver(es => { const e = es[es.length - 1];
+      onVis(e.isIntersecting && (e.intersectionRatio >= .29 || e.intersectionRect.height >= innerHeight * .5)); }, {threshold: [0, .3]});
     const api = {sc, settle, goTo,
       pause() { userPaused = true; updBtn(); },
       state: () => ({beat: i, paused: userPaused, started}),
@@ -1426,7 +1428,7 @@ const TermTips=(()=>{
     [/^containment$/i, /versus $/i, null],              // limiting a feature's blast radius by design, not the incident-response phase
     [/^hardening$/i, /Visibility and $/, null],        // the title of CISA's telecom guidance document
   ];
-  const SKIP_SEL='a,button,summary,pre,code,h1,h2,h3,h4,dt,.term,.attck,.schip,.kicker,.libnav,.controls,.nav,.glossary,.ft,.tt,.ct,.pn,.fn,.tn,.cs,.layer-h,.rtitle,.badge,.clang,.loop,.dk,.dt,.ds,.seg-h,.dl,.wl,.zt,.num,#termtip,svg,.xbar';
+  const SKIP_SEL='a,button,summary,pre,code,h1,h2,h3,h4,dt,.term,.attck,.schip,.kicker,.libnav,.controls,.nav,.glossary,.ft,.tt,.ct,.pn,.fn,.tn,.cs,.layer-h,.rtitle,.badge,.clang,.loop,.dk,.dt,.ds,.seg-h,.dl,.wl,.zt,.num,#termtip,svg,.xbar,.xf-kick';
   const SCOPE_SEL='p,li,dd,td,.what,.row,.note,.dev,.terms,.log,.day,.a,.see,.eg';
   const OWNER_SEL='.cpt,.fc,.tac,.card,.prod,.track', TITLE_SEL='dt,.ft,.tt,.ct,.pn';
   let entries=[], rx=null, tip=null, shown=null, pinned=false, hideTimer=0;
