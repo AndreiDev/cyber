@@ -485,7 +485,7 @@ const FOUND_FIGS={
   cap:'The process-start rows carry the Windows Security event ID, 4688, which is written only if process auditing is switched on; an EDR agent or Sysmon (Event ID 1) records the same start, parent included, in its own format. The address 203.0.113.7 is from a range reserved for documentation. On a phone this figure scrolls sideways.'},
  login:{kick:'See it move · telemetry', title:'A remote login leaves two records',
   claim:'A login is a conversation between three machines. The two that grant it write it down, and the SIEM puts the two records back together.',
-  cap:'Event 4769 (a Kerberos service ticket was requested) is written on the domain controller, which logs the requesting machine by its IP address (the row shows its name); it is the same event the Kerberoasting card in the codex detects on. Event 4624 (a successful logon) is written on the server being logged in to. Windows stamps both with the same Logon GUID, one ID for one login, like a request ID that ties one request’s log lines together across services; the GUIDs are shortened and the times are illustrative. Lateral movement, an intruder reusing a stolen login to hop from machine to machine, leaves exactly these records, between machines that do not normally talk. On a phone this figure scrolls sideways.'},
+  cap:'Event 4769 (a Kerberos service ticket was requested) is written on the domain controller, which logs the requesting machine by its IP address (the rows show names); it is the same event the Kerberoasting card in the codex detects on. Event 4624 (a successful logon) is written on the server being logged in to. For a Kerberos login like this one, Windows stamps both with the same Logon GUID, an ID the two records share, like a request ID that ties one request’s log lines together across services; the GUIDs are shortened and the times are illustrative. Lateral movement, an intruder reusing a stolen login to hop from machine to machine, leaves these same records, only between machines that do not normally talk; the SIEM knows WS-099 is new for alice because it keeps each account’s login history (a baseline, the UEBA idea in §04). On a phone this figure scrolls sideways.'},
 };
 
 // ---------- 02 TACTICS ----------
@@ -1385,7 +1385,7 @@ const XF = (() => {
 (() => {
   const {S, text, SHAPES, DEEP, explainer} = XF;
   const host = document.getElementById('xf-login');
-  const svg = S('svg', {viewBox: '0 0 1000 460', role: 'img', 'aria-label': 'A remote login: Alice, an administrator, starts a remote-desktop session from her laptop to a file server. The laptop asks the domain controller for a ticket, gets it back and presents it to the server, and a two-way session opens. The domain controller logs event 4769 and the server logs event 4624; the SIEM lines the two records up and joins them on account, server, time and the Logon GUID both carry. Then the same login comes from WS-099, a machine alice has never used: the same two records land, and the SIEM raises an alert.'});
+  const svg = S('svg', {viewBox: '0 0 1000 460', role: 'img', 'aria-label': 'A remote login: Alice, an administrator, starts a remote-desktop session from her laptop to a file server. The laptop asks the domain controller for a ticket, gets it back and presents it to the server, and a two-way session opens. The domain controller logs event 4769 and the server logs event 4624; the SIEM lines the two records up and joins them on account, server, time and the Logon GUID both carry. Then the same login comes from WS-099, a machine alice has never used: the same two records land, and the SIEM, which keeps each account’s login history, raises an alert.'});
   const machine = (x, y, w, title, sub, kind) => {
     const g = S('g', {}, S('rect', {x, y, width: w, height: 76, rx: 10, class: 'xf-bx', style: 'stroke:var(--line)'}));
     if (kind === 'laptop') g.append(S('rect', {x: x + 18, y: y + 22, width: 30, height: 20, rx: 2, style: 'fill:none;stroke:var(--muted)'}), S('line', {x1: x + 12, y1: y + 47, x2: x + 54, y2: y + 47, style: 'stroke:var(--muted);stroke-width:2'}));
@@ -1423,7 +1423,7 @@ const XF = (() => {
   const brk = S('g', {class: 'xf-brk'}, S('path', {d: 'M72 361H60V381', pathLength: 1}), S('path', {d: 'M72 401H60V381', pathLength: 1}));
   const pair = text(96, 440, 'SAME ACCOUNT · SAME SERVER · SECONDS APART · SAME GUID', 'xf-mono xf-show', {style: 'fill:var(--amber)'});
   const dia = SHAPES.diamond('amber'); dia.setAttribute('transform', 'translate(84 436) scale(.75)');
-  const alert = S('g', {class: 'xf-show xf-alert'}, dia, text(96, 440, 'ALERT · alice FROM A MACHINE SHE HAS NEVER USED', 'xf-mono', {style: 'fill:var(--amber)'}));
+  const alert = S('g', {class: 'xf-show xf-alert'}, dia, text(96, 440, 'ALERT · alice FROM WS-099 · NOT IN HER LOGIN HISTORY', 'xf-mono', {style: 'fill:var(--amber)'}));
   svg.append(...rows, brk, pair, alert);
   const layer = S('g'); svg.append(layer);
   host.append(svg);
@@ -1459,7 +1459,7 @@ const XF = (() => {
       {dur: 3600, view: CLIENT, cap: 'The domain controller sends back a ticket that only that server can read.', cues: [[.05, back(1600)]]},
       {dur: 4600, view: [440, 1000], cap: 'The laptop presents the ticket to the server, and the server lets her in.', cues: [
         [.05, present(1700)], [.5, record(1, ALICE, 1400)]]},
-      {dur: 3800, view: [220, 780], cap: 'The session stays open: keystrokes flow in, and screen updates flow back.'},
+      {dur: 3000, view: [220, 780], cap: 'The session stays open: keystrokes flow in, and screen updates flow back.'},
       // the join, field by field: the bracket draws, then alice, FILESRV01, the two times and the Logon GUID light in turn
       {dur: 6600, view: JOIN, cap: 'Two machines, two logs, one story: the SIEM joins them by account, server and time. Windows even stamps both with the same Logon GUID.', cues: [
         [.06, () => brk.classList.add('xf-on')], [.22, () => mark(['account'])], [.36, () => mark(['server'])], [.5, () => mark(['time'])],
