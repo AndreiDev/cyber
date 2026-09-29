@@ -3049,8 +3049,8 @@ const XF = (() => {
   const figs = {};
 
   function explainer(host, cfg) {
-    const B = cfg.beats, layer = cfg.layer, parts = [], hold = cfg.hold ?? 1600, sc = {instant: false};
-    let i = 0, t = 0, fired = 0, holdT = 0, userPaused = false, visible = false, started = false, raf = 0, last = 0, shownI = -1;
+    const B = cfg.beats, layer = cfg.layer, scroller = cfg.scroller, parts = [], hold = cfg.hold ?? 1600, loops = cfg.loops ?? Infinity, sc = {instant: false};
+    let i = 0, t = 0, fired = 0, holdT = 0, passes = 0, userPaused = false, finished = false, touched = false, visible = false, started = false, raf = 0, last = 0, shownI = -1;
     let rm = RM.matches;   // mirrored from the change event: reading RM.matches every frame keeps Chromium's cache fresh, so 'change' never fires
     sc.spawn = o => {
       if (sc.instant || !layer) { o.onDone?.(); return null; }
@@ -3075,27 +3075,41 @@ const XF = (() => {
       }
     }
     function clearParts() { parts.length = 0; layer?.replaceChildren(); }
+    // the camera: on a narrow screen the scroller shows part of the figure, so a beat with a view [x0, x1] (viewBox units) scrolls
+    // x0 to 16 px from the left. It stops for good once the reader touches the scroller.
+    function pan(k) {
+      const v = B[k]?.view, svg = scroller?.querySelector('svg');
+      if (!v || !svg || touched || scroller.scrollWidth <= scroller.clientWidth + 1) return;
+      const vb = svg.viewBox.baseVal, r = svg.getBoundingClientRect(), s0 = scroller.getBoundingClientRect();
+      const scale = vb && vb.width ? r.width / vb.width : 1, at0 = r.left - s0.left - scroller.clientLeft + scroller.scrollLeft;
+      const left = Math.max(0, Math.min(scroller.scrollWidth - scroller.clientWidth, at0 + v[0] * scale - 16));
+      scroller.scrollTo({left, behavior: rm ? 'auto' : 'smooth'});
+    }
     function fire(b, p) { const cs = b.cues || []; while (fired < cs.length && cs[fired][0] <= p) cs[fired++][1](sc); }
     function goTo(k) {
       cfg.reset?.(); clearParts(); sc.instant = true;
       for (let j = 0; j < k; j++) { fired = 0; fire(B[j], 1); B[j].tick?.(1, sc); }
-      sc.instant = false; i = k; t = 0; fired = 0; holdT = 0; show();
+      sc.instant = false; i = k; t = 0; fired = 0; holdT = 0; finished = false; pan(k); show();
     }
     function settle(k) {
       goTo(k); sc.instant = true; fire(B[k], 1); B[k].tick?.(1, sc); sc.instant = false; t = B[k].dur; show();
     }
     function step(dt) {
+      if (finished) return;                   // resting after the last pass: nothing moves until play is pressed
       cfg.ambient?.(dt, sc); updateParts(dt);
       if (i < B.length) {
         t += dt; const b = B[i], p = Math.min(1, t / b.dur); fire(b, p); b.tick?.(p, sc);
-        if (t >= b.dur) { i++; t = 0; fired = 0; }
-      } else if ((holdT += dt) >= hold) goTo(0);
+        if (t >= b.dur) { i++; t = 0; fired = 0; if (i < B.length) pan(i); }
+      } else if ((holdT += dt) >= hold) {
+        if (++passes >= loops) { rest(); userPaused = true; finished = true; updBtn(); }   // the last pass: rest on the finished frame until play is pressed
+        else goTo(0);
+      }
       show();
     }
     const running = () => visible && !userPaused && !document.hidden && !rm;
     function frame(now) { raf = 0; if (!running()) return; step(Math.max(0, Math.min(50, now - last))); last = now; raf = requestAnimationFrame(frame); }
     function kick() { if (!raf && running()) { last = performance.now(); raf = requestAnimationFrame(frame); } }
-    function onVis(v) { visible = v; if (visible && !started && !rm) { started = true; goTo(0); } kick(); }
+    function onVis(v) { visible = v; if (visible && !started && !rm && !userPaused) { started = true; passes = 0; goTo(0); } kick(); }
     // the beat bar: pause/play, one bar per beat (click to jump), the narration line
     const bar = document.createElement('div'); bar.className = 'xbar';
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'xplay';
@@ -3104,10 +3118,14 @@ const XF = (() => {
     const dots = B.map((b, k) => {
       const d = document.createElement('button'); d.type = 'button'; d.className = 'xdot';
       d.setAttribute('aria-label', `Beat ${k + 1} of ${B.length}${b.cap ? ': ' + b.cap : ''}`);
-      d.addEventListener('click', () => { started = true; if (rm || userPaused) settle(k); else goTo(k); kick(); });
+      d.addEventListener('click', () => { started = true; passes = 0; if (rm || userPaused) settle(k); else goTo(k); kick(); });
       dotsEl.append(d); return d;
     });
-    btn.addEventListener('click', () => { userPaused = !userPaused; updBtn(); kick(); });
+    btn.addEventListener('click', () => {
+      userPaused = !userPaused;
+      if (!userPaused && (finished || !started)) { started = true; passes = 0; goTo(0); }   // play after the last pass, or on a figure that never started: from beat 1
+      updBtn(); kick();
+    });
     bar.append(btn, dotsEl); if (cfg.captions !== false) bar.append(cap);
     cfg.bar.append(bar);
     function updBtn() { btn.hidden = rm; btn.innerHTML = userPaused ? PLAY_I : PAUSE_I; btn.setAttribute('aria-label', userPaused ? 'Play the animation' : 'Pause the animation'); }
@@ -3123,14 +3141,17 @@ const XF = (() => {
       onVis(e.isIntersecting && (e.intersectionRatio >= .29 || e.intersectionRect.height >= innerHeight * .5)); }, {threshold: [0, .3]});
     const api = {sc, settle, goTo,
       pause() { userPaused = true; updBtn(); },
-      state: () => ({beat: i, paused: userPaused, started}),
+      state: () => ({beat: i, paused: userPaused, started, passes}),
       advance(ms) { for (let k = 0; k < ms; k += 16) step(16); },  // test hook: moves the clock, ignoring visibility and pause
       setVisible: onVis,                                          // test hook: what the IntersectionObserver would report
       destroy() {
         io.disconnect(); cancelAnimationFrame(raf); raf = 0; clearParts(); bar.remove();
+        TOUCH.forEach(n => scroller?.removeEventListener(n, onTouch));
         document.removeEventListener('visibilitychange', kick); RM.removeEventListener?.('change', onRM);
         if (figs[cfg.name] === api) delete figs[cfg.name];
       }};
+    const TOUCH = ['pointerdown', 'touchstart', 'wheel'], onTouch = () => { touched = true; };
+    TOUCH.forEach(n => scroller?.addEventListener(n, onTouch, {passive: true}));
     document.addEventListener('visibilitychange', kick);
     RM.addEventListener?.('change', onRM);
     updBtn(); rest();                         // complete at rest until it scrolls into view
