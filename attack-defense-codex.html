@@ -3210,12 +3210,13 @@ function mountRail(det, e, n) {
     g.svg = svg; return g;
   }
   function build() {
+    const wasPaused = inst?.state().paused;   // a rebuild (a resize across the phone breakpoint) keeps the reader's pause
     inst?.destroy();
     G = draw(); stage.replaceChildren(G.svg);
     G.groups.forEach((grp, i) => wire(grp, () => { inst.settle(i); inst.pause(); }));
     const lerp = (a, b, q) => [a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q];
     const mark = k => { G.groups.forEach((grp, j) => grp.classList.toggle('xf-on', j === k)); now(k); };
-    const beats = steps.map((s, k) => ({dur: 4600,
+    const beats = steps.map((s, k) => ({dur: 4600, cap: `Step ${k + 1}: ${s.ph} — ${{seen: 'leaves a trace', faint: 'hard to see', blind: 'no trace'}[s.v]}`,
       cues: [[.26, () => { G.groups[k].classList.add('xf-reached'); mark(k); }],
         [.32, sc => {
           const land = () => { G.groups[k].mark.classList.add('xf-on'); G.segs[k].classList.add('xf-lit'); };
@@ -3224,7 +3225,7 @@ function mountRail(det, e, n) {
             sc.spawn({shape: S('g', {}, pill), from: G.from[k], to: G.mk[k], dur: 950, onDone: land}); }
         }]],
       tick: p => { at(G.token, ...lerp(k ? G.st[k - 1] : G.start, G.st[k], ease(seg(p, 0, .26)))); G.token.style.opacity = 1; }}));
-    beats.push({dur: 1400, tick: p => { const q = ease(p); at(G.token, ...lerp(G.st[N - 1], G.end, q)); G.token.style.opacity = String(1 - q); }});
+    beats.push({dur: 1400, cap: 'The attacker moves on', tick: p => { const q = ease(p); at(G.token, ...lerp(G.st[N - 1], G.end, q)); G.token.style.opacity = String(1 - q); }});
     inst = explainer(stage, {
       name: `rail-${n}`, bar, layer: G.layer, captions: false, hold: 1400, beats,
       reset() {
@@ -3233,9 +3234,10 @@ function mountRail(det, e, n) {
       },
       rest: x => { x.settle(beats.length - 1); mark(-1); },
     });
+    if (wasPaused) inst.pause();
   }
   build();
-  new ResizeObserver(([en]) => { const v = en.contentRect.width < 620; if (v !== vert) { vert = v; build(); } }).observe(stage);
+  new ResizeObserver(([en]) => { if (en.contentRect.width === 0) return; const v = en.contentRect.width < 620; if (v !== vert) { vert = v; build(); } }).observe(stage);
   return {rebuild(v) { vert = v; build(); }};
 }
 
@@ -3248,7 +3250,10 @@ function miniRing([from, to]) {
   const xy = (t, r) => { const a = (-90 + t * 45) * Math.PI / 180; return [60 + r * Math.cos(a), 60 + r * Math.sin(a)]; };
   const arc = (t1, t2, r) => { const [x1, y1] = xy(t1, r), [x2, y2] = xy(t2, r);
     return `M${x1.toFixed(2)} ${y1.toFixed(2)}A${r} ${r} 0 ${(t2 - t1) * 45 > 180 ? 1 : 0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`; };
+  const NAMES = ['Attack', 'Telemetry', 'Detection', 'Investigate', 'Respond', 'Emulate', 'Find the gap', 'New detection'];
+  const label = 'You are here on the loop: ' + NAMES.slice(from, to + 1).join(' → ');
   return S('svg', {viewBox: '0 0 120 120', class: 'xf-mini', 'aria-hidden': 'true'},
+    S('title', {}, label),
     S('circle', {cx: 60, cy: 60, r: 44, class: 'xf-mini-track'}),
     S('path', {d: arc(from - .35, to + .35, 44), class: 'xf-mini-arc', style: `stroke:${col(C[from])}`}),
     C.map((c, i) => { const [x, y] = xy(i, 44), on = i >= from && i <= to;
@@ -3390,6 +3395,8 @@ function openTarget(){
   if(!el) return;
   if(el.closest('.ex.hide')) setFilter(null);          // the target is filtered out: clear the filter
   for(let n=el; n; n=n.parentElement) if(n.tagName==='DETAILS') n.open=true;
+  // build the rail of every open card first: the toggle handler would insert it above the target after the scroll
+  for (const d of document.querySelectorAll('details.ex[open]')) if (!d.xfRail) { const k = +d.id.slice(2); d.xfRail = mountRail(d, EX[k - 1], k); }
   el.scrollIntoView();
 }
 openTarget(); window.addEventListener('hashchange',openTarget);
