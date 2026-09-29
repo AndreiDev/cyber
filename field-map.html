@@ -287,6 +287,14 @@
     <div class="sh"><span class="sn">04</span><h2>The defensive stack — what every product category actually does</h2></div>
     <p class="sdesc">These acronyms are most of what makes a room of security people sound like another language. For each: what it <em>is</em>, the problem it solves, the data it looks at, what an alert from it looks like, where it fails, and a vendor or two so the names ring a bell. Vendors are illustrative, not endorsements, and categories blur as products expand.</p>
     <div id="stack-g"></div>
+    <figure class="xf-fig" id="xf-stack-fig">
+      <p class="xf-kick">See it move · the stack as one machine</p>
+      <h3 class="xf-h">Prevent, sense, decide, act</h3>
+      <p class="xf-claim">Telemetry never stops flowing into the SIEM. One attack gets past the preventive controls and is followed all the way to containment.</p>
+      <div class="xf-scroll" id="xf-stack"></div>
+      <div id="xf-stack-bar"></div>
+      <figcaption>The steady stream is the point: detection works on the flow of ordinary events, and the attack is one event in it. On a phone this figure scrolls sideways.</figcaption>
+    </figure>
     <div class="callout"><p class="ct">How to think about the stack</p><p><b>Sensors</b> (EDR, NDR, cloud audit logs, identity logs, WAF) produce telemetry. The <b>SIEM</b> collects it and runs detection rules. <b>SOAR</b> automates what happens when a rule fires. Most of the rest is either a <b>preventive control</b> that stops a class of attack outright (MFA, patching, allowlisting, IMDSv2, and segmentation: splitting the network so that a compromised machine can reach only the few systems it needs) or a <b>posture tool</b> that finds the misconfigurations before an attacker does (CSPM, SSPM, vulnerability scanning, attack-surface management). The remainder either feeds the sensors and the SIEM (threat intel, deception) or tests the whole stack on purpose (BAS, adversary emulation).</p><p>No product covers the whole lifecycle. Defense in depth means an attacker who slips past one layer still has to get past the next, and each layer they touch is another chance to notice them.</p></div>
   </section>
 
@@ -1076,6 +1084,83 @@ const XF = (() => {
     beats: STAGES.map((s, k) => ({dur: 4200, cap: s.k,
       cues: [[0, () => tint((k + 7) % 8)], [.3, sc => { tint(k); select(k); if (!sc.instant) ping(k); }]],
       tick: p => spin(((k - 1) + ease(seg(p, 0, .3))) * 45)})),
+  });
+})();
+
+// ---------- figure: the defensive stack as one machine (§04) ----------
+(() => {
+  const {S, text, lines, arrow, box, SHAPES, explainer} = XF;
+  const host = document.getElementById('xf-stack');
+  const svg = S('svg', {viewBox: '0 0 1000 512', role: 'img', 'aria-label': 'The defensive stack as one machine: sensors stream telemetry into the SIEM; preventive controls stop two attacks; a third lands on a laptop, the EDR reports it, a SIEM rule matches, SOAR isolates the laptop and hands the case to an analyst; breach-and-attack simulation tests the whole stack.'},
+    S('defs', {}, S('pattern', {id: 'xf-hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)'},
+      S('rect', {width: 6, height: 6, style: 'fill:var(--panel)'}), S('line', {x1: 0, y1: 0, x2: 0, y2: 6, style: 'stroke:var(--ok);stroke-width:2.4;stroke-opacity:.7'}))));
+  const siem = box(230, 140, 580, 64, 'SIEM', 'collects every sensor’s telemetry, normalizes it, runs the detection rules', 'def');
+  const soar = box(600, 24, 160, 60, 'SOAR', 'runs the playbook', 'def'), an = box(800, 24, 180, 60, 'SOC analyst', 'investigates, responds', 'def');
+  svg.append(text(230, 14, 'FEEDS', 'xf-mono', {style: 'fill:var(--amber)'}),
+    box(230, 24, 160, 60, 'Threat intel', 'known-bad indicators', 'amber'), box(410, 24, 160, 60, 'Deception', 'alerts when touched', 'amber'),
+    arrow(310, 84, 310, 138, 'amber'), arrow(490, 84, 490, 138, 'amber'),
+    soar, an, arrow(760, 54, 798, 54, 'def'), siem, arrow(680, 140, 680, 86, 'def'),
+    text(690, 118, 'A RULE FIRES', 'xf-mono', {style: 'fill:var(--def)'}));
+  const tag = text(796, 164, 'RULE MATCH', 'xf-mono xf-show', {'text-anchor': 'end', style: 'fill:var(--amber)'});
+  svg.append(tag,
+    S('rect', {x: 230, y: 340, width: 580, height: 90, rx: 10, style: 'fill:var(--ink);stroke:var(--line)'}),
+    text(796, 424, 'YOUR ENVIRONMENT', 'xf-mono', {'text-anchor': 'end', style: 'fill:var(--muted-dim);font-size:10px'}),
+    text(822, 238, 'TELEMETRY', 'xf-mono', {style: 'fill:var(--def)'}));
+  [['EDR', 'endpoints'], [['Identity', 'logs'], 'accounts'], ['NDR', 'network'], [['Cloud audit', 'logs'], 'cloud'], ['WAF', 'web apps']].forEach(([name, asset], i) => {
+    const bx = 230 + i * 118, cx = bx + 54;
+    svg.append(box(bx, 262, 108, 52, name, null, 'def', true), arrow(cx, 262, cx, 206, 'def', {dash: '3 4'}),
+      S('line', {x1: cx, y1: 340, x2: cx, y2: 316, class: 'xf-tick'}), text(cx, 404, asset, 'xf-lab', {'text-anchor': 'middle'})); });
+  const land = S('circle', {cx: 284, cy: 376, r: 12, class: 'xf-show', style: 'fill:none;stroke:var(--def);stroke-width:1.6;stroke-dasharray:3 3'});
+  const iso = S('g', {class: 'xf-show'}, S('rect', {x: 238, y: 346, width: 92, height: 80, rx: 8, style: 'fill:none;stroke:var(--ok);stroke-width:1.8;stroke-dasharray:5 3'}),
+    text(284, 421, 'ISOLATED', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--ok);font-size:9.5px'}));
+  svg.append(land, iso,
+    text(20, 150, 'PREVENT', 'xf-mono', {style: 'fill:var(--ok)'}),
+    lines(20, 172, ['MFA', 'Patching', 'Allowlisting', 'IMDSv2', 'Segmentation'], 18, 'xf-lab'),
+    S('rect', {x: 186, y: 256, width: 14, height: 174, rx: 3, style: 'fill:url(#xf-hatch);stroke:var(--ok);stroke-opacity:.8'}),
+    text(20, 282, 'ATTACKS', 'xf-mono', {style: 'fill:var(--atk)'}));
+  [300, 326].forEach(y => svg.append(arrow(20, y, 182, y, 'atk', {head: false, width: 1}), S('line', {x1: 183, y1: y - 8, x2: 183, y2: y + 8, style: 'stroke:var(--atk);stroke-width:2.2'})));
+  svg.append(text(20, 346, 'stopped outright', 'xf-lab'),
+    arrow(20, 376, 186, 376, 'atk', {head: false, width: 1}), arrow(200, 376, 264, 376, 'atk', {dash: '4 3', width: 1}),
+    text(20, 398, 'slips past one layer', 'xf-lab'),
+    S('path', {d: 'M230 444v10h580v-10', style: 'fill:none;stroke:var(--amber);stroke-width:1.4;stroke-dasharray:4 3'}),
+    text(520, 478, 'POSTURE · CSPM · SSPM · VULNERABILITY SCANNING · EASM', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--amber)'}),
+    text(520, 498, 'find the misconfigurations before an attacker does', 'xf-lab', {'text-anchor': 'middle'}),
+    arrow(990, 386, 816, 386, 'purple', {dash: '5 4'}),
+    text(986, 370, 'BAS · EMULATION', 'xf-mono', {'text-anchor': 'end', style: 'fill:var(--purple)'}),
+    text(986, 406, 'tests the whole stack', 'xf-lab', {'text-anchor': 'end'}));
+  const layer = S('g'); svg.append(layer);
+  host.append(svg);
+  const R = [siem, soar, an].map(g => g.firstChild), red = () => SHAPES.dot('atk', 5);
+  let acc = 0, accF = 0, feed = 0;
+  explainer(host, {
+    name: 'stack', bar: document.getElementById('xf-stack-bar'), layer, hold: 1200,
+    reset() { [land, iso, tag].forEach(e => e.classList.remove('xf-on')); },
+    ambient(dt, sc) {
+      if ((acc += dt) > 260) { acc = 0; const cx = 284 + Math.floor(Math.random() * 5) * 118;
+        sc.spawn({shape: SHAPES.dot('def', 2.6), from: [cx, 258], to: [cx, 208], dur: 760}); }
+      if ((accF += dt) > 2300) { accF = 0; const fx = feed++ % 2 ? 490 : 310;
+        sc.spawn({shape: SHAPES.dot('amber', 2.6), from: [fx, 88], to: [fx, 136], dur: 700}); }
+    },
+    beats: [
+      {dur: 4200, cap: 'Sensors on every layer stream telemetry into the SIEM, all day long.'},
+      {dur: 3800, cap: 'Attacks arrive from outside. Preventive controls stop two of them outright.', cues: [
+        [.05, sc => sc.spawn({shape: red(), from: [20, 300], to: [180, 300], dur: 1300, onDone: () => sc.burst(180, 300, 'atk')})],
+        [.3, sc => sc.spawn({shape: red(), from: [20, 326], to: [180, 326], dur: 1300, onDone: () => sc.burst(180, 326, 'atk')})]]},
+      {dur: 3800, cap: 'A third slips past the wall and lands on a laptop, right under the EDR sensor.', cues: [
+        [.05, sc => sc.spawn({shape: red(), from: [20, 376], to: [284, 376], dur: 2000, onDone: () => { land.classList.add('xf-on'); sc.burst(284, 376, 'def'); }})]]},
+      {dur: 3400, cap: 'The EDR records it, and that event climbs to the SIEM along with everything else.', cues: [
+        [.1, sc => sc.spawn({shape: SHAPES.pill('amber'), from: [284, 256], to: [284, 214], dur: 1300, onDone: () => sc.flash(R[0])})]]},
+      {dur: 3800, cap: 'A detection rule matches that event, and the SIEM raises an alert.', cues: [
+        [.05, sc => { tag.textContent = 'RULE MATCH'; tag.style.fill = 'var(--amber)'; tag.classList.add('xf-on'); sc.flash(R[0]); }],
+        [.35, sc => sc.spawn({shape: SHAPES.diamond('amber'), from: [680, 138], to: [680, 88], dur: 1000, onDone: () => sc.flash(R[1])})]]},
+      {dur: 4400, cap: 'SOAR runs the playbook: it isolates the laptop and hands the case to an analyst.', cues: [
+        [.05, sc => sc.spawn({shape: SHAPES.diamond('amber'), from: [690, 54], to: [880, 54], ctrl: [785, 8], dur: 1300, onDone: () => sc.flash(R[2])})],
+        [.4, () => iso.classList.add('xf-on')]]},
+      {dur: 4800, cap: 'Meanwhile, breach-and-attack simulation replays attacks on purpose, to prove all of this still works.', cues: [
+        [.05, sc => sc.spawn({shape: SHAPES.dot('purple', 5), from: [990, 386], to: [756, 386], dur: 1500,
+          onDone: () => sc.spawn({shape: SHAPES.pill('purple'), from: [756, 256], to: [756, 214], dur: 1100,
+            onDone: () => { tag.textContent = 'RULE TESTED ✓'; tag.style.fill = 'var(--purple)'; tag.classList.add('xf-on'); sc.flash(R[0], 'xf-hotp'); }})})]]},
+    ],
   });
 })();
 
