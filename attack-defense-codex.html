@@ -341,6 +341,10 @@
   .xf-found{opacity:0; transition:opacity .35s;}
   .xf-found.xf-on{opacity:1;}
   .xf-found-d{fill:var(--amber);}
+  .xf-found .xf-halo{fill:none; stroke:var(--amber); stroke-width:2; opacity:0; transform-box:fill-box; transform-origin:center;}
+  .xf-found.xf-ping .xf-halo{animation:xf-halo 1s ease-out;}
+  @keyframes xf-halo{from{opacity:.9; transform:scale(1);} to{opacity:0; transform:scale(3.4);}}
+  @media (prefers-reduced-motion: reduce){ .xf-found.xf-ping .xf-halo{animation:none;} }
   .xf-found-l{font-size:10.5px; letter-spacing:.12em; fill:var(--amber);}
   .xf-legend{display:flex; flex-wrap:wrap; gap:6px 20px; margin-top:10px; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; color:var(--muted);}
   .xf-legend span{display:flex; align-items:center; gap:7px;}
@@ -3234,7 +3238,9 @@ function mountRail(det, e, n) {
       : [S('circle', {cx: x, cy: y, r: 7, class: 'xf-mk xf-blind'}), S('line', {x1: x - 4.5, y1: y + 4.5, x2: x + 4.5, y2: y - 4.5, class: 'xf-slash'})],
     text(tx, ty, LBL[s.v], 'xf-mono xf-vlabel', {'text-anchor': anchor}),
     tag.length ? lines(tx, ty + 15, tag, 14, 'xf-src', {'text-anchor': anchor}) : null);
+  // the diamond arrives with a halo ping, the landing mark (a burst would say "stopped here")
   const foundG = (x, y, tx, ty, word, anchor) => S('g', {class: 'xf-found', 'aria-hidden': 'true'},
+    S('circle', {cx: x, cy: y, r: 7, class: 'xf-halo'}),
     S('path', {d: 'M0-7.5L7.5 0L0 7.5L-7.5 0Z', class: 'xf-found-d', transform: `translate(${x} ${y})`, filter: 'url(#xf-glow)'}),
     text(tx, ty, word, 'xf-mono xf-found-l', {'text-anchor': anchor}));
   function draw() {
@@ -3300,7 +3306,7 @@ function mountRail(det, e, n) {
     G.groups.forEach((grp, i) => wire(grp, () => { inst.settle(i); inst.pause(); }));
     const lerp = (a, b, q) => [a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q];
     const mark = k => { G.groups.forEach((grp, j) => grp.classList.toggle('xf-on', j === k)); now(k); };
-    const notice = sc => { G.found.classList.add('xf-on'); sc.burst(...G.fxy, 'amber'); };
+    const notice = sc => { G.found.classList.add('xf-on'); sc.flash(G.found, 'xf-ping'); };
     const beats = steps.map((s, k) => ({dur: 4600, cap: `Step ${k + 1}: ${s.ph} — ${say(s)}${k === fk ? `. First noticed here: ${F.how}` : ''}`,
       cues: [[.26, () => { G.groups[k].classList.add('xf-reached'); mark(k); }],
         [.32, sc => {

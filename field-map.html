@@ -491,7 +491,7 @@ const FOUND_FIGS={
   cap:'The process-start rows carry the Windows Security event ID, 4688, which is written only if process auditing is switched on; an EDR agent or Sysmon (Event ID 1) records the same start, parent included, in its own format. The address 203.0.113.7 is from a range reserved for documentation.'},
  login:{kick:'See it move · telemetry', title:'A remote login leaves two records',
   claim:'A login is a conversation between three machines. The two that grant it write it down, and the SIEM puts the two records back together.',
-  cap:'Event 4769 (a Kerberos service ticket was requested) is written on the domain controller, which logs the requesting machine by its IP address (the rows show names); it is the same event the Kerberoasting card in the codex detects on. Event 4624 (a successful logon) is written on the server being logged in to. For a Kerberos login like this one, Windows stamps both with the same Logon GUID, an ID the two records share, like a request ID that ties one request’s log lines together across services; the GUIDs are shortened and the times are illustrative. Lateral movement, an intruder reusing a stolen login to hop from machine to machine, leaves these same records, only between machines that do not normally talk; the SIEM knows WS-099 is new for alice because it keeps each account’s login history (a baseline, the UEBA idea in the defensive stack (§04)). On a phone this figure scrolls sideways.'},
+  cap:'Event 4769 (a Kerberos service ticket was requested) is written on the domain controller, which logs the requesting machine by its IP address (the rows show names); it is the same event the Kerberoasting card in the codex detects on. Event 4624 (a successful logon) is written on the server being logged in to. For a Kerberos login like this one, Windows stamps both with the same Logon GUID, an ID the two records share, like a request ID that ties one request’s log lines together across services; the GUIDs are shortened and the times are illustrative. Lateral movement, an intruder reusing a stolen login to hop from machine to machine, leaves these same records, only between machines that do not normally talk; the SIEM knows WS-099 is new for alice because it keeps each account’s login history (a baseline, the idea behind UEBA, user and entity behavior analytics, in <a href="#stack">the defensive stack</a>). On a phone this figure scrolls sideways.'},
 };
 
 // ---------- 02 TACTICS ----------
@@ -1511,7 +1511,7 @@ const XF = (() => {
     beats: [
       {dur: 2200, view: CLIENT, cap: 'Alice, an administrator, starts a remote-desktop session from her laptop to a file server.', cues: [
         [.05, sc => sc.flash(lapR)], [.1, () => intent.classList.add('xf-on')]]},
-      {dur: 4600, view: CLIENT, cap: 'First, her laptop asks the domain controller for a ticket to that server.', cues: [
+      {dur: 4600, view: CLIENT, cap: 'First, her laptop asks the domain controller for a ticket to that server; the controller logs the request (event 4769).', cues: [
         [.05, request(1300)], [.42, record(0, ALICE, 1500)]]},
       {dur: 3600, view: CLIENT, cap: 'The domain controller sends back a ticket that only that server can read.', cues: [[.05, back(1600)]]},
       {dur: 4600, view: [440, 1000], cap: 'The laptop presents the ticket to the server, and the server lets her in.', cues: [
@@ -1525,7 +1525,7 @@ const XF = (() => {
       {dur: 5600, view: CLIENT, cap: 'Now the same login from WS-099, a machine alice has never used.', cues: [
         [0, () => { session.classList.remove('xf-open'); [...rows, brk, pair].forEach(e => e.classList.remove('xf-on')); mark(KEYS, 'xf-lit', false); relabel(true); }],
         [.04, request(1100)], [.25, record(0, OTHER, 1200)], [.27, back(1200)], [.5, present(1300)], [.74, record(1, OTHER, 1100)]]},
-      {dur: 5800, view: JOIN, cap: 'Same two records, wrong machine: this is what lateral movement looks like, and the join is how a SIEM catches it.', cues: [
+      {dur: 5800, view: JOIN, cap: 'Same two records, wrong machine: this is what lateral movement looks like, and the join plus her login history is how a SIEM catches it.', cues: [
         [.06, () => { brk.classList.add('xf-on'); mark(KEYS); }], [.24, () => mark(['from'], 'xf-bad')],
         [.42, () => { rows.forEach(g => g.classList.add('xf-flag')); alert.classList.add('xf-on'); }]]},
     ],
@@ -1533,7 +1533,7 @@ const XF = (() => {
 })();
 
 // ---------- figure: the Pyramid of Pain, climbed (§06) ----------
-// Two geometries, like the codex rail: the pyramid with its description column, and below a 900 px container one row per
+// Two geometries, like the codex rail: the pyramid with its description column, and below a 1000 px container one row per
 // level (the narration carries the descriptions). A resize across the breakpoint rebuilds the figure and keeps a pause,
 // on the beat the reader paused on.
 (() => {
@@ -1593,11 +1593,12 @@ const XF = (() => {
   }
 
   function narrow() {
-    const W = 440, T = 40, R = 58, cx = 92, x0 = 202, vx = 336, vw = 100, G = {maxW: W - 4 - x0, rows: []};
+    const W = 440, T = 28, R = 58, cx = 92, x0 = 202, vx = 336, vw = 100, G = {maxW: W - 4 - x0, rows: []};
+    // one line of column heads, each over its own column: the bar key and the attacker's time on the left, the rule's verdict on the right
     G.svg = S('svg', {viewBox: `0 0 ${W} ${T + 6 * R + 4}`, class: 'xf-narrow', role: 'img', 'aria-label': LABEL},
       S('rect', {x: x0, y: 9, width: 16, height: 5, rx: 1.5, class: 'xf-cost-key'}),
-      text(x0 + 22, 15, 'TIME THE ATTACKER SPENDS', 'xf-mono xf-colh'),
-      text(W - 4, 31, 'A RULE KEYED ON IT', 'xf-mono xf-colh', {'text-anchor': 'end'}));
+      text(x0 + 22, 15, 'ATTACKER’S TIME', 'xf-mono xf-colh'),
+      text(W - 4, 15, 'RULE', 'xf-mono xf-colh', {'text-anchor': 'end'}));
     L.forEach(([lvl, , , , from], i) => {
       const ym = T + i * R + R / 2, bw = 88 + 18 * i, bx = cx - bw / 2, ls = wrap(lvl, 14);
       const row = {band: S('rect', {x: bx, y: ym - 21, width: bw, height: 42, rx: 5, class: 'xf-band', style: `fill-opacity:${OP[i]};stroke-opacity:${SOP[i]}`}),
@@ -1615,7 +1616,7 @@ const XF = (() => {
   // a value scrambles in its own alphabet: hex stays hex, digits digits, letters letters of the same case; separators keep their place
   const scramble = v => { const hex = /^[0-9a-f…]+$/.test(v);
     return [...v].map(c => hex && HEX.includes(c) ? pick(HEX) : DIG.includes(c) ? pick(DIG) : LOW.includes(c) ? pick(LOW) : UP.includes(c) ? pick(UP) : c).join(''); };
-  let narrowNow = host.clientWidth < 900, inst = null;
+  let narrowNow = host.clientWidth < 1000, inst = null;
   function build() {
     const was = inst?.state();   // a rebuild (a resize across the breakpoint) keeps the reader's pause, and their beat
     inst?.destroy();
@@ -1639,13 +1640,15 @@ const XF = (() => {
           if (ms >= PAIN[k] + 150 || sc.instant) setStamp(k, v);
         }})),
     });
-    if (was?.paused) { if (was.started) inst.settle(Math.min(was.beat, L.length - 1)); inst.pause(); }   // one beat per level; it never finishes
+    // one beat per level; it never finishes. A figure that never started rests on its last beat, which is what settle gives it too, so
+    // the beat carries over through any number of rebuilds (the rebuilt instance has not started either)
+    if (was?.paused) { inst.settle(Math.min(was.beat, L.length - 1)); inst.pause(); }
   }
   build();
   // the rebuild runs just after the observer's callback: rebuilding inside it changes the host's height, which Chrome reports as
   // an error ("ResizeObserver loop completed with undelivered notifications")
   let later = 0;
-  new ResizeObserver(([en]) => { if (en.contentRect.width === 0) return; const v = en.contentRect.width < 900;
+  new ResizeObserver(([en]) => { if (en.contentRect.width === 0) return; const v = en.contentRect.width < 1000;
     if (v !== narrowNow) { narrowNow = v; clearTimeout(later); later = setTimeout(build); } }).observe(host);
 })();
 
