@@ -221,7 +221,8 @@
   .xf-sp-where span{display:block; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-dim); margin-bottom:2px;}
   .xf-navbtns{display:flex; gap:8px; margin-top:16px;}
   .xf-btn{background:none; border:1px solid var(--line); color:var(--muted); font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.05em; padding:6px 12px; border-radius:7px; cursor:pointer;}
-  .xf-btn:hover,.xf-btn:focus-visible{color:var(--fg); border-color:var(--muted-dim); outline:none;}
+  .xf-btn:hover{color:var(--fg); border-color:var(--muted-dim);}
+  .xf-btn:focus-visible{color:var(--fg); outline:2px solid var(--amber); outline-offset:2px;}
   @media (prefers-reduced-motion: reduce){ .xf-node.xf-ping .xf-halo{animation:none;} }
   .found{grid-auto-flow:row dense;}
   .xf-pnode{opacity:0; transition:opacity .45s;}
@@ -364,7 +365,7 @@
       <p class="xf-claim">The longer the change takes, the more it costs them, and only the rule at the top survives it.</p>
       <div class="xf-scroll" id="xf-pyramid"></div>
       <div id="xf-pyramid-bar"></div>
-      <figcaption>David Bianco’s Pyramid of Pain, with one example from the codex at each level. The example values are placeholders, and the IP addresses are from ranges reserved for documentation.</figcaption>
+      <figcaption>David Bianco’s Pyramid of Pain, with one example from the codex at each level. The replacement values are invented, and the IP addresses are from ranges reserved for documentation. On a phone this figure scrolls sideways.</figcaption>
     </figure>
   </section>
 
@@ -448,10 +449,10 @@ const FOUND=[
 const FOUND_FIGS={
  proc:{kick:'See it move · telemetry', title:'One process starts another',
   claim:'Every program start becomes an event with its parent attached. That parent is what gives an attack away.',
-  cap:'Process-creation events come from an EDR agent, from Sysmon (Event ID 1) or from Windows Security Event 4688. The address 203.0.113.7 is from a range reserved for documentation.'},
+  cap:'Process-creation events come from an EDR agent, from Sysmon (Event ID 1) or from Windows Security Event 4688. The address 203.0.113.7 is from a range reserved for documentation. On a phone this figure scrolls sideways.'},
  login:{kick:'See it move · telemetry', title:'A remote login leaves two records',
   claim:'A login is a conversation between three machines, and two of them write it down. The SIEM puts the two records back together.',
-  cap:'Event 4769 (a Kerberos service ticket was requested) is written on the domain controller; it is the same event the Kerberoasting card in the codex detects on. Event 4624 (a successful logon) is written on the server being logged in to.'},
+  cap:'Event 4769 (a Kerberos service ticket was requested) is written on the domain controller; it is the same event the Kerberoasting card in the codex detects on. Event 4624 (a successful logon) is written on the server being logged in to. On a phone this figure scrolls sideways.'},
 };
 
 // ---------- 02 TACTICS ----------
@@ -1072,7 +1073,7 @@ const XF = (() => {
   const STAGES = [
     {k: 'Attack', c: 'atk', grp: 'Offense', t: 'An attacker moves through the stages of an intrusion, from the first way in to the damage, on one of the eleven attack surfaces.',
      w: '<a href="#anatomy">Anatomy of a breach</a> and <a href="#surfaces">Attack surfaces</a> on this page, and the attack chain in every codex card'},
-    {k: 'Telemetry', c: 'def', grp: 'Defense', t: 'Every step leaves a trace: a login event, a new process, a DNS lookup, a cloud API call. Sensors record it.',
+    {k: 'Telemetry', c: 'def', grp: 'Defense', t: 'Most steps leave a trace: a login event, a new process, a DNS lookup, a cloud API call. Sensors record it.',
      w: '<a href="#foundations">Foundations</a> (Telemetry) and <a href="#stack">the defensive stack</a> on this page, and the trace on every chain step'},
     {k: 'Detection', c: 'def', grp: 'Defense', t: 'Rules in the SIEM pick out the abnormal traces and raise an alert.',
      w: '“Detection in practice” in every <a href="attack-defense-codex.html">codex card</a>'},
@@ -1137,6 +1138,8 @@ const XF = (() => {
       cues: [[0, () => tint((k + 7) % 8)], [.3, sc => { tint(k); select(k); if (!sc.instant) ping(k); }]],
       tick: p => spin(((k - 1) + ease(seg(p, 0, .3))) * 45)})),
   });
+  // the panel is rewritten on every beat, which would steal focus from a keyboard reader: focus anywhere in the figure pauses it
+  document.getElementById('xf-loop-fig').addEventListener('focusin', e => { if (!e.target.closest('.xplay')) x.pause(); });
 })();
 
 // ---------- figure: the defensive stack as one machine (§04) ----------
@@ -1329,7 +1332,7 @@ const XF = (() => {
   const host = document.getElementById('xf-pyramid');
   const ax = 360, ay = 22, by = 446, hw = 270, h = (by - ay) / 6, half = y => hw * (y - ay) / (by - ay);
   const L = [ // top to bottom: level, difficulty, color, codex example, indicator kind, value before → after (null: cannot change)
-    ['TTPs', 'Tough', 'atk', 'Kerberoasting as a behavior: one account asking for many RC4 service tickets (#10)', 'behavior', 'RC4 ticket burst', null],
+    ['TTPs', 'Tough', 'atk', 'Kerberoasting as a behavior: one account asking for tickets to many services within minutes (#10)', 'behavior', 'many-service burst', null],
     ['Tools', 'Challenging', 'web', 'The C2 framework itself, such as Cobalt Strike (#12): replacing it costs time and money', '', 'Cobalt Strike', 'another framework'],
     ['Network / host artifacts', 'Annoying', 'amber', 'Cobalt Strike’s default settings, such as the names it gives its internal channels (#12): the operator changes them', '', 'default settings', 'custom settings'],
     ['Domain names', 'Simple', 'dos', 'The SolarWinds backdoor’s C2 domain, avsvmcloud.com (#1): register another', 'IOC', 'avsvmcloud.com', 'new-domain.example'],
