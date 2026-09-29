@@ -246,6 +246,16 @@
   @keyframes xf-flow{to{stroke-dashoffset:-14;}}
   .xf-track2{fill:none; stroke:var(--line); stroke-width:1.2; stroke-dasharray:2 5;}
   @media (prefers-reduced-motion: reduce){ .xf-open .xf-lane-flow{animation:none;} }
+  .xf-band{transition:fill-opacity .35s;}
+  .xf-band.xf-hot{fill-opacity:.62!important;}
+  .xf-band-l{font-family:"Space Grotesk",system-ui,sans-serif; font-weight:600; font-size:14.5px; fill:var(--fg);}
+  .xf-lead{stroke:var(--line); stroke-width:1; stroke-dasharray:2 3;}
+  .xf-ex-t{font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:13px; fill:var(--muted);}
+  .xf-chip{fill:var(--code-bg,#0A0E13); stroke:var(--line);}
+  .xf-cval{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; fill:var(--fg);}
+  .xf-badge{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10px; letter-spacing:.06em; fill:var(--muted-dim);}
+  .xf-badge.xf-miss{fill:var(--atk);}
+  .xf-badge.xf-still{fill:var(--ok);}
 </style>
 </head>
 <body>
@@ -350,6 +360,14 @@
       <p>Every vendor names groups differently, because each one sees only its own slice of the evidence (its own customers, its own sensors) and cannot be sure its cluster of activity is the same as a competitor’s. So one crew has many names. The group run by Russia’s SVR foreign-intelligence service is <b>APT29</b> (Mandiant), <b>Midnight Blizzard</b> (Microsoft; weather themes in which the family name gives the origin: "Blizzard" = Russia, "Typhoon" = China, "Sandstorm" = Iran, "Sleet" = North Korea, "Tempest" = financially motivated crime), <b>Cozy Bear</b> (CrowdStrike; animals, "Bear" = Russia, "Panda" = China, "Kitten" = Iran, "Chollima" = North Korea, "Spider" = criminal), <b>Nobelium</b> (Microsoft's older name) and <b>G0016</b> (MITRE ATT&CK’s group ID). Mandiant, now part of Google, numbered its groups: <b>APT</b> plus a number for state-backed espionage groups, <b>FIN</b> plus a number for financially motivated ones, and <b>UNC</b> ("uncategorized") plus a number (UNC5221, UNC5537) for a cluster of activity not yet tied to a known group. In July 2026 Google Threat Intelligence Group replaced the APT and FIN numbers with two-word names whose second word gives the category ("Relic" = Russia, "Castle" = China, "Ion" = Iran, "Neptune" = North Korea, "Comet" = cybercrime), so APT29 is now also <b>ICE RELIC</b>. UNC numbers remain for clusters still under investigation, and the old names stay searchable, so you will keep meeting APT29 in older reports and throughout this library. Vendors publish cross-reference tables; Microsoft and CrowdStrike began a joint mapping in 2025.</p>
       <p>Attribution (working out who is behind an intrusion) clusters on <b>TTPs</b> (tactics, techniques, procedures: the actor's habits) more than on <b>IOCs</b> (indicators of compromise: specific hashes, IPs, domains), because habits are expensive to change. David Bianco's <b>Pyramid of Pain</b> makes this explicit: hash values are trivial for an attacker to change, IPs easy, domains simple, network and host artifacts annoying, tools challenging, and TTPs at the top are tough. That is the whole argument for behavior-based detection over indicator matching, and the reason the detection rules in the codex cards are written the way they are.</p>
     </div>
+    <figure class="xf-fig" id="xf-pyramid-fig">
+      <p class="xf-kick">See it move · the Pyramid of Pain</p>
+      <h3 class="xf-h">An attacker changes one indicator at each level</h3>
+      <p class="xf-claim">The longer the change takes, the more it costs them, and only the rule at the top survives it.</p>
+      <div class="xf-scroll" id="xf-pyramid"></div>
+      <div id="xf-pyramid-bar"></div>
+      <figcaption>David Bianco’s Pyramid of Pain, with one example from the codex at each level. The example values are placeholders, and the IP addresses are from ranges reserved for documentation.</figcaption>
+    </figure>
   </section>
 
   <!-- 07 FRAMEWORKS -->
@@ -1302,6 +1320,70 @@ const XF = (() => {
       {dur: 4200, cap: 'The session stays open: keystrokes flow in, and screen updates flow back.'},
       {dur: 5000, cap: 'Two machines, two logs, one story: the SIEM joins them by account, server and time.', cues: [[.1, () => corr.classList.add('xf-on')]]},
     ],
+  });
+})();
+
+// ---------- figure: the Pyramid of Pain, climbed (§06) ----------
+(() => {
+  const {S, col, text, lines, wrap, explainer} = XF;
+  const host = document.getElementById('xf-pyramid');
+  const ax = 360, ay = 22, by = 446, hw = 270, h = (by - ay) / 6, half = y => hw * (y - ay) / (by - ay);
+  const L = [ // top to bottom: level, difficulty, color, codex example, indicator kind, value before → after (null: cannot change)
+    ['TTPs', 'Tough', 'atk', 'Kerberoasting as a behavior: one account asking for many RC4 service tickets (#10)', 'behavior', 'RC4 ticket burst', null],
+    ['Tools', 'Challenging', 'web', 'The C2 framework itself, such as Cobalt Strike (#12): replacing it costs time and money', '', 'Cobalt Strike', 'another framework'],
+    ['Network / host artifacts', 'Annoying', 'amber', 'Cobalt Strike’s default settings, such as the names it gives its internal channels (#12): the operator changes them', '', 'default settings', 'custom settings'],
+    ['Domain names', 'Simple', 'dos', 'The SolarWinds backdoor’s C2 domain, avsvmcloud.com (#1): register another', 'IOC', 'avsvmcloud.com', 'new-domain.example'],
+    ['IP addresses', 'Easy', 'ot', 'A server address on a blocklist: rent a new server', 'IOC', '203.0.113.7', '198.51.100.24'],
+    ['Hash values', 'Trivial', 'ot', 'The hash of a malware file: recompile, and it no longer matches', 'IOC', 'e3b0c4…b855', '9f86d0…a08f'],
+  ];
+  const CAPS = [
+    'TTPs. To dodge a behavior rule they would have to stop Kerberoasting altogether, so the rule keeps firing. Tough.',
+    'Tools. They switch to a different C2 framework, which costs time and money. Challenging.',
+    'Network and host artifacts. They change the tool’s default settings, which takes real work. Annoying.',
+    'Domain names. They register another domain, and the domain rule misses. Simple.',
+    'IP addresses. They move to a new server address, and the address rule misses. Easy.',
+    'Hash values. They recompile the malware, the hash changes, and the hash rule misses. Trivial.',
+  ];
+  const PAIN = [2600, 1900, 1300, 800, 550, 350]; // ms the attacker spends changing it, top to bottom
+  const svg = S('svg', {viewBox: '0 0 1120 470', role: 'img', 'aria-label': 'Pyramid of Pain: an attacker changes a file hash, an IP address, a domain, a tool’s default settings and the tool itself, and each rule keyed on them misses; the behavior at the top cannot be changed without abandoning the attack, so its rule keeps firing.'},
+    S('defs', {}, S('linearGradient', {id: 'xf-pain-g', gradientUnits: 'userSpaceOnUse', x1: 0, y1: by, x2: 0, y2: ay},
+      S('stop', {offset: 0, style: 'stop-color:var(--ot);stop-opacity:.5'}), S('stop', {offset: 1, style: 'stop-color:var(--atk)'}))));
+  svg.append(S('line', {x1: 40, y1: by, x2: 40, y2: ay + 8, style: 'stroke:url(#xf-pain-g);stroke-width:2.4', 'marker-end': 'url(#xf-ah-atk)'}),
+    text(26, (ay + by) / 2, 'COST TO THE ATTACKER OF CHANGING IT', 'xf-mono', {'text-anchor': 'middle', transform: `rotate(-90 26 ${(ay + by) / 2})`, style: 'fill:var(--muted);font-size:10.5px'}),
+    text(1048, 12, 'A RULE KEYED ON IT', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--muted-dim);font-size:9.5px'}));
+  const bands = [], vals = [], badges = [];
+  L.forEach(([lvl, diff, c, ex, kind, from], i) => {
+    const yt = ay + i * h + (i ? 1.5 : 0), yb = ay + (i + 1) * h - 1.5, ym = (yt + yb) / 2;
+    const pts = [[ax - half(yt), yt], [ax + half(yt), yt], [ax + half(yb), yb], [ax - half(yb), yb]].map(p => p.map(n => n.toFixed(1)).join(',')).join(' ');
+    const exl = wrap(ex, 44), ty = ym - 4 - (exl.length - 1) * 8;
+    const band = S('polygon', {points: pts, class: 'xf-band', style: `fill:${col(c)};fill-opacity:${(.3 - i * .035).toFixed(3)};stroke:${col(c)};stroke-opacity:.75;stroke-width:1.2`});
+    const val = text(1048, ym - 3, from, 'xf-cval', {'text-anchor': 'middle'}), badge = text(1048, ym + 17, '', 'xf-badge', {'text-anchor': 'middle'});
+    bands.push(band); vals.push(val); badges.push(badge);
+    svg.append(band, text(ax, (i ? ym : yt + (yb - yt) * .74) + 5, lvl, 'xf-band-l', {'text-anchor': 'middle', style: i ? null : 'font-size:13px'}),
+      S('line', {x1: (ax + half(ym) + 8).toFixed(1), y1: ym.toFixed(1), x2: 648, y2: ym.toFixed(1), class: 'xf-lead'}),
+      text(660, ty, diff.toUpperCase() + (kind ? ` · ${kind.toUpperCase()}` : ''), 'xf-mono', {style: `fill:${col(c)}`}),
+      lines(660, ty + 18, exl, 16, 'xf-ex-t'),
+      S('rect', {x: 984, y: ym - 19, width: 128, height: 23, rx: 5, class: 'xf-chip'}), val, badge);
+  });
+  host.append(svg);
+  const setBadge = (k, state) => {
+    badges[k].textContent = state === 'miss' ? '✗ rule misses' : state === 'still' ? '✓ still fires' : '✓ rule fires';
+    badges[k].setAttribute('class', 'xf-badge' + (state ? ' xf-' + state : ''));
+  };
+  const CH = '0123456789abcdef.-';
+  const scramble = n => Array.from({length: n}, () => CH[Math.floor(Math.random() * CH.length)]).join('');
+  let lastS = 0;
+  explainer(host, {
+    name: 'pyramid', bar: document.getElementById('xf-pyramid-bar'), hold: 2600,
+    reset() { L.forEach((l, k) => { vals[k].textContent = l[5]; setBadge(k, ''); bands[k].classList.remove('xf-hot'); }); },
+    beats: [5, 4, 3, 2, 1, 0].map(k => ({dur: PAIN[k] + 2600, cap: CAPS[k],
+      cues: [[0, () => bands.forEach((b, j) => b.classList.toggle('xf-hot', j === k))]],
+      tick: (p, sc) => {
+        const ms = p * (PAIN[k] + 2600), from = L[k][5], to = L[k][6];
+        if (ms < 400) return;
+        if (ms < 400 + PAIN[k] && !sc.instant) { if (Math.abs(ms - lastS) > 55) { lastS = ms; vals[k].textContent = scramble(from.length); } return; }
+        vals[k].textContent = to || from; setBadge(k, to ? 'miss' : 'still');
+      }})),
   });
 })();
 
