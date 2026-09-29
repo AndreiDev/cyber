@@ -256,16 +256,29 @@
   .xf-cell.xf-bad{fill:var(--atk);}
   .xf-brk path{fill:none; stroke:var(--amber); stroke-width:1.8; stroke-dasharray:1; stroke-dashoffset:1; transition:stroke-dashoffset .5s ease;}
   .xf-brk.xf-on path{stroke-dashoffset:0;}
-  .xf-band{transition:fill-opacity .35s;}
-  .xf-band.xf-hot{fill-opacity:.62!important;}
+  .xf-band{fill:var(--atk); stroke:var(--atk); stroke-width:1.2; transition:stroke .3s, stroke-width .3s;}
+  .xf-band.xf-hot{stroke:var(--amber); stroke-width:2.6; stroke-opacity:1!important;}
   .xf-band-l{font-family:"Space Grotesk",system-ui,sans-serif; font-weight:600; font-size:14.5px; fill:var(--fg);}
   .xf-lead{stroke:var(--line); stroke-width:1; stroke-dasharray:2 3;}
   .xf-ex-t{font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:13px; fill:var(--muted);}
+  .xf-colh{font-size:10.5px; letter-spacing:.08em; fill:var(--muted-dim);}
+  .xf-axis{stroke:var(--line); stroke-width:1;}
+  .xf-cost,.xf-cost-key{fill:var(--amber);}
   .xf-chip{fill:var(--code-bg,#0A0E13); stroke:var(--line);}
   .xf-cval{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; fill:var(--fg);}
-  .xf-badge{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10px; letter-spacing:.06em; fill:var(--muted-dim);}
-  .xf-badge.xf-miss{fill:var(--atk);}
-  .xf-badge.xf-still{fill:var(--ok);}
+  .xf-vchip{fill:none; stroke:var(--line); transition:fill .3s, stroke .3s;}
+  .xf-badge{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; letter-spacing:.04em; fill:var(--muted-dim);}
+  .xf-verdict.xf-miss .xf-vchip{fill:var(--atk); fill-opacity:.14; stroke:var(--atk); stroke-opacity:.6;}
+  .xf-verdict.xf-still .xf-vchip{fill:var(--ok); fill-opacity:.14; stroke:var(--ok); stroke-opacity:.6;}
+  .xf-verdict.xf-miss .xf-badge{fill:var(--atk);}
+  .xf-verdict.xf-still .xf-badge{fill:var(--ok);}
+  .xf-stamp{opacity:0; transform:scale(.5); transform-box:fill-box; transform-origin:center; transition:opacity .2s, transform .25s cubic-bezier(.3,1.6,.6,1);}
+  .xf-stamp.xf-on{opacity:1; transform:none;}
+  .xf-stamp circle{fill:var(--code-bg,#0A0E13); stroke-width:1.6;}
+  .xf-stamp text{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:14px; font-weight:700;}
+  .xf-stamp.xf-miss circle{stroke:var(--atk);} .xf-stamp.xf-miss text{fill:var(--atk);}
+  .xf-stamp.xf-still circle{stroke:var(--ok);} .xf-stamp.xf-still text{fill:var(--ok);}
+  .xf-scroll > svg.xf-narrow{min-width:0; max-width:600px;}
   .xf-ctx{transition:opacity .4s;}
   .xf-ctx.xf-dim{opacity:.45;}
   .xf-bx.xf-hotc{stroke:var(--def)!important; stroke-width:2.6; stroke-opacity:1;}
@@ -382,10 +395,10 @@
     <figure class="xf-fig" id="xf-pyramid-fig">
       <p class="xf-kick">See it move · the Pyramid of Pain</p>
       <h3 class="xf-h">An attacker changes one indicator at each level</h3>
-      <p class="xf-claim">The longer the change takes, the more it costs them, and only the rule at the top survives it.</p>
+      <p class="xf-claim">The longer the change takes, the more it costs them, and only a rule on the behavior itself survives all of them.</p>
       <div class="xf-scroll" id="xf-pyramid"></div>
       <div id="xf-pyramid-bar"></div>
-      <figcaption>David Bianco’s Pyramid of Pain, with one example from the codex at each level. The replacement values are invented, and the IP addresses are from ranges reserved for documentation. On a phone this figure scrolls sideways.</figcaption>
+      <figcaption>David Bianco’s Pyramid of Pain, with one example from the codex at each level. A behavior rule can still be starved by pacing; that is what tuning and the decoy account in <a href="attack-defense-codex.html#ex10">card 10</a> are for. The replacement values are invented, and the IP addresses are from ranges reserved for documentation.</figcaption>
     </figure>
   </section>
 
@@ -1463,67 +1476,119 @@ const XF = (() => {
 })();
 
 // ---------- figure: the Pyramid of Pain, climbed (§06) ----------
+// Two geometries, like the codex rail: the pyramid with its description column, and below a 720 px container one row per
+// level (the narration carries the descriptions). A resize across the breakpoint rebuilds the figure and keeps a pause.
 (() => {
-  const {S, col, text, lines, wrap, explainer} = XF;
-  const host = document.getElementById('xf-pyramid');
-  const ax = 360, ay = 22, by = 446, hw = 270, h = (by - ay) / 6, half = y => hw * (y - ay) / (by - ay);
-  const L = [ // top to bottom: level, difficulty, color, codex example, indicator kind, value before → after (null: cannot change)
-    ['TTPs', 'Tough', 'atk', 'Kerberoasting as a behavior: one account asking for tickets to many services within minutes (#10)', 'behavior', 'many-service burst', null],
-    ['Tools', 'Challenging', 'web', 'The C2 framework itself, such as Cobalt Strike (#12): replacing it costs time and money', '', 'Cobalt Strike', 'another framework'],
-    ['Network / host artifacts', 'Annoying', 'amber', 'Cobalt Strike’s default settings, such as the names it gives its internal channels (#12): the operator changes them', '', 'default settings', 'custom settings'],
-    ['Domain names', 'Simple', 'dos', 'The SolarWinds backdoor’s C2 domain, avsvmcloud.com (#1): register another', 'IOC', 'avsvmcloud.com', 'new-domain.example'],
-    ['IP addresses', 'Easy', 'ot', 'A server address on a blocklist: rent a new server', 'IOC', '203.0.113.7', '198.51.100.24'],
-    ['Hash values', 'Trivial', 'ot', 'The hash of a malware file: recompile, and it no longer matches', 'IOC', 'e3b0c4…b855', '9f86d0…a08f'],
+  const {S, text, lines, wrap, explainer} = XF;
+  const host = document.getElementById('xf-pyramid'), bar = document.getElementById('xf-pyramid-bar');
+  const L = [ // top to bottom: level, difficulty, codex example, indicator kind, value before → after, what a rule keyed on it does then
+    ['TTPs', 'Tough', 'Kerberoasting as a behavior: an ordinary account collecting service tickets it will never use (#10)', 'behavior', 'many-service burst', 'slow trickle', 'still'],
+    ['Tools', 'Challenging', 'The C2 framework itself, such as Cobalt Strike (#12): replacing it costs time and money', '', 'Cobalt Strike', 'different C2', 'miss'],
+    ['Network / host artifacts', 'Annoying', 'Cobalt Strike’s default names for its internal channels, its named pipes (#12): the operator renames them', '', 'default pipes', 'renamed pipes', 'miss'],
+    ['Domain names', 'Simple', 'The SolarWinds backdoor’s C2 domain, avsvmcloud.com (#1): register another', 'IOC', 'avsvmcloud.com', 'new-domain.example', 'miss'],
+    ['IP addresses', 'Easy', 'A server address on a blocklist: rent a new server', 'IOC', '203.0.113.7', '198.51.100.24', 'miss'],
+    ['Hash values', 'Trivial', 'The hash of a malware file: recompile, and it no longer matches', 'IOC', '4c1f9a…e27b', 'b83d02…51c9', 'miss'],
   ];
   const CAPS = [
-    'TTPs. To dodge a behavior rule they would have to stop Kerberoasting altogether, so the rule keeps firing. Tough.',
+    'TTPs. Nothing here to swap: to get a ticket to crack, the account must ask for a ticket to a service it never uses. They can pace it slower, which costs days and still shows, or give up. Tough.',
     'Tools. They switch to a different C2 framework, which costs time and money. Challenging.',
-    'Network and host artifacts. They change the tool’s default settings, which takes real work. Annoying.',
+    'Network and host artifacts. They change the tool’s default settings, one for every artifact you key on, and must know which ones you watch. Annoying.',
     'Domain names. They register another domain, and the domain rule misses. Simple.',
     'IP addresses. They move to a new server address, and the address rule misses. Easy.',
     'Hash values. They recompile the malware, the hash changes, and the hash rule misses. Trivial.',
   ];
-  const PAIN = [2600, 1900, 1300, 800, 550, 350]; // ms the attacker spends changing it, top to bottom
-  const svg = S('svg', {viewBox: '0 0 1120 470', role: 'img', 'aria-label': 'Pyramid of Pain: an attacker changes a file hash, an IP address, a domain, a tool’s default settings and the tool itself, and each rule keyed on them misses; the behavior at the top cannot be changed without abandoning the attack, so its rule keeps firing.'},
-    S('defs', {}, S('linearGradient', {id: 'xf-pain-g', gradientUnits: 'userSpaceOnUse', x1: 0, y1: by, x2: 0, y2: ay},
-      S('stop', {offset: 0, style: 'stop-color:var(--ot);stop-opacity:.5'}), S('stop', {offset: 1, style: 'stop-color:var(--atk)'}))));
-  svg.append(S('line', {x1: 40, y1: by, x2: 40, y2: ay + 8, style: 'stroke:url(#xf-pain-g);stroke-width:2.4', 'marker-end': 'url(#xf-ah-atk)'}),
-    text(26, (ay + by) / 2, 'COST TO THE ATTACKER OF CHANGING IT', 'xf-mono', {'text-anchor': 'middle', transform: `rotate(-90 26 ${(ay + by) / 2})`, style: 'fill:var(--muted);font-size:10.5px'}),
-    text(1048, 12, 'A RULE KEYED ON IT', 'xf-mono', {'text-anchor': 'middle', style: 'fill:var(--muted-dim);font-size:9.5px'}));
-  const bands = [], vals = [], badges = [];
-  L.forEach(([lvl, diff, c, ex, kind, from], i) => {
-    const yt = ay + i * h + (i ? 1.5 : 0), yb = ay + (i + 1) * h - 1.5, ym = (yt + yb) / 2;
-    const pts = [[ax - half(yt), yt], [ax + half(yt), yt], [ax + half(yb), yb], [ax - half(yb), yb]].map(p => p.map(n => n.toFixed(1)).join(',')).join(' ');
-    const exl = wrap(ex, 44), ty = ym - 4 - (exl.length - 1) * 8;
-    const band = S('polygon', {points: pts, class: 'xf-band', style: `fill:${col(c)};fill-opacity:${(.3 - i * .035).toFixed(3)};stroke:${col(c)};stroke-opacity:.75;stroke-width:1.2`});
-    const val = text(1048, ym - 3, from, 'xf-cval', {'text-anchor': 'middle'}), badge = text(1048, ym + 17, '', 'xf-badge', {'text-anchor': 'middle'});
-    bands.push(band); vals.push(val); badges.push(badge);
-    svg.append(band, text(ax, (i ? ym : yt + (yb - yt) * .74) + 5, lvl, 'xf-band-l', {'text-anchor': 'middle', style: i ? null : 'font-size:13px'}),
-      S('line', {x1: (ax + half(ym) + 8).toFixed(1), y1: ym.toFixed(1), x2: 648, y2: ym.toFixed(1), class: 'xf-lead'}),
-      text(660, ty, diff.toUpperCase() + (kind ? ` · ${kind.toUpperCase()}` : ''), 'xf-mono', {style: `fill:${col(c)}`}),
-      lines(660, ty + 18, exl, 16, 'xf-ex-t'),
-      S('rect', {x: 984, y: ym - 19, width: 128, height: 23, rx: 5, class: 'xf-chip'}), val, badge);
-  });
-  host.append(svg);
-  const setBadge = (k, state) => {
-    badges[k].textContent = state === 'miss' ? '✗ rule misses' : state === 'still' ? '✓ still fires' : '✓ rule fires';
-    badges[k].setAttribute('class', 'xf-badge' + (state ? ' xf-' + state : ''));
-  };
-  const CH = '0123456789abcdef.-';
-  const scramble = n => Array.from({length: n}, () => CH[Math.floor(Math.random() * CH.length)]).join('');
-  let lastS = 0;
-  explainer(host, {
-    name: 'pyramid', bar: document.getElementById('xf-pyramid-bar'), hold: 2600,
-    reset() { L.forEach((l, k) => { vals[k].textContent = l[5]; setBadge(k, ''); bands[k].classList.remove('xf-hot'); }); },
-    beats: [5, 4, 3, 2, 1, 0].map(k => ({dur: PAIN[k] + 2600, cap: CAPS[k],
-      cues: [[0, () => bands.forEach((b, j) => b.classList.toggle('xf-hot', j === k))]],
-      tick: (p, sc) => {
-        const ms = p * (PAIN[k] + 2600), from = L[k][5], to = L[k][6];
-        if (ms < 400) return;
-        if (ms < 400 + PAIN[k] && !sc.instant) { if (Math.abs(ms - lastS) > 55) { lastS = ms; vals[k].textContent = scramble(from.length); } return; }
-        vals[k].textContent = to || from; setBadge(k, to ? 'miss' : 'still');
-      }})),
-  });
+  const PAIN = [2600, 1900, 1300, 800, 550, 350];    // ms the attacker spends changing it, top to bottom: the scramble, and the cost bar
+  const DUR = [7000, 4500, 5600, 3400, 3150, 2950];  // each beat: 400 ms, the change, then time to read its line
+  const OP = [.55, .42, .32, .24, .16, .08], SOP = [.95, .85, .75, .65, .55, .45];   // one red ramp, top to bottom
+  const VERDICT = {miss: '✗ rule misses', still: '✓ still fires', '': '✓ rule fires'};
+  const LABEL = 'Pyramid of Pain: an attacker changes a file hash, an IP address, a domain, the tool’s pipe names and the tool itself, and each rule keyed on them misses. At the top the behavior can only be slowed down, which costs the attacker days, and a rule on the behavior still fires. Bars show how long each change takes.';
+  const stampG = (x, y, r) => S('g', {class: 'xf-stamp'}, S('circle', {cx: x, cy: y, r}), text(x, y + 5, '', null, {'text-anchor': 'middle'}));
+  const verdictG = (x, y, w, hh, fs) => S('g', {class: 'xf-verdict'}, S('rect', {x, y, width: w, height: hh, rx: 4, class: 'xf-vchip'}),
+    text(x + w / 2, y + hh / 2 + 4, '', 'xf-badge', {'text-anchor': 'middle', style: fs ? `font-size:${fs}px` : null}));
+  const chipG = (x, y, w, hh, from) => [S('rect', {x, y, width: w, height: hh, rx: 5, class: 'xf-chip'}), text(x + w / 2, y + hh / 2 + 4, from, 'xf-cval', {'text-anchor': 'middle'})];
+
+  function wide() {
+    const W = 1160, ax = 320, ay = 44, by = 468, hw = 240, h = (by - ay) / 6, half = y => hw * (y - ay) / (by - ay);
+    const cx0 = 878, vx = 1018, vw = 138, G = {maxW: 128, rows: []};
+    G.svg = S('svg', {viewBox: `0 0 ${W} 480`, role: 'img', 'aria-label': LABEL},
+      S('defs', {}, S('linearGradient', {id: 'xf-pain-g', gradientUnits: 'userSpaceOnUse', x1: 0, y1: by, x2: 0, y2: ay},
+        S('stop', {offset: 0, style: 'stop-color:var(--atk);stop-opacity:.25'}), S('stop', {offset: 1, style: 'stop-color:var(--atk)'}))),
+      S('line', {x1: 40, y1: by, x2: 40, y2: ay + 8, style: 'stroke:url(#xf-pain-g);stroke-width:2.4', 'marker-end': 'url(#xf-ah-atk)'}),
+      text(26, (ay + by) / 2, 'COST TO THE ATTACKER OF CHANGING IT', 'xf-mono', {'text-anchor': 'middle', transform: `rotate(-90 26 ${(ay + by) / 2})`, style: 'fill:var(--muted);font-size:10.5px'}),
+      lines(cx0, 16, ['TIME THE', 'ATTACKER SPENDS'], 14, 'xf-mono xf-colh'),
+      lines(vx + vw / 2, 16, ['A RULE', 'KEYED ON IT'], 14, 'xf-mono xf-colh', {'text-anchor': 'middle'}),
+      S('line', {x1: cx0, y1: ay, x2: cx0, y2: by, class: 'xf-axis'}));
+    L.forEach(([lvl, diff, ex, kind, from], i) => {
+      const yt = ay + i * h + (i ? 1.5 : 0), yb = ay + (i + 1) * h - 1.5, ym = (yt + yb) / 2, edge = ax + half(ym);
+      const pts = [[ax - half(yt), yt], [ax + half(yt), yt], [ax + half(yb), yb], [ax - half(yb), yb]].map(p => p.map(n => n.toFixed(1)).join(',')).join(' ');
+      const exl = wrap(ex, 40), ty = ym - 4 - (exl.length - 1) * 8;
+      const row = {band: S('polygon', {points: pts, class: 'xf-band', style: `fill-opacity:${OP[i]};stroke-opacity:${SOP[i]}`}),
+        cost: S('rect', {x: cx0, y: ym - 4, width: 0, height: 8, rx: 2, class: 'xf-cost'}),
+        chip: chipG(vx, ym - 26, vw, 23, from), verdict: verdictG(vx, ym + 2, vw, 22), stamp: stampG(edge + 4, ym, 11)};
+      G.svg.append(row.band, text(ax, (i ? ym : yt + (yb - yt) * .74) + 5, lvl, 'xf-band-l', {'text-anchor': 'middle', style: i ? null : 'font-size:13px'}),
+        row.stamp, S('line', {x1: (edge + 20).toFixed(1), y1: ym.toFixed(1), x2: 590, y2: ym.toFixed(1), class: 'xf-lead'}),
+        text(600, ty, diff.toUpperCase() + (kind ? ` · ${kind.toUpperCase()}` : ''), 'xf-mono xf-diff', {style: `fill:var(--${i < 3 ? 'atk' : 'muted'})`}),
+        lines(600, ty + 18, exl, 16, 'xf-ex-t'), row.cost, ...row.chip, row.verdict);
+      G.rows.push(row);
+    });
+    return G;
+  }
+
+  function narrow() {
+    const W = 440, T = 40, R = 58, cx = 92, x0 = 202, vx = 336, vw = 100, G = {maxW: W - 4 - x0, rows: []};
+    G.svg = S('svg', {viewBox: `0 0 ${W} ${T + 6 * R + 4}`, class: 'xf-narrow', role: 'img', 'aria-label': LABEL},
+      S('rect', {x: x0, y: 9, width: 16, height: 5, rx: 1.5, class: 'xf-cost-key'}),
+      text(x0 + 22, 15, 'TIME THE ATTACKER SPENDS', 'xf-mono xf-colh'),
+      text(W - 4, 31, 'A RULE KEYED ON IT', 'xf-mono xf-colh', {'text-anchor': 'end'}));
+    L.forEach(([lvl, , , , from], i) => {
+      const ym = T + i * R + R / 2, bw = 88 + 18 * i, bx = cx - bw / 2, ls = wrap(lvl, 14);
+      const row = {band: S('rect', {x: bx, y: ym - 21, width: bw, height: 42, rx: 5, class: 'xf-band', style: `fill-opacity:${OP[i]};stroke-opacity:${SOP[i]}`}),
+        cost: S('rect', {x: x0, y: ym + 8, width: 0, height: 5, rx: 1.5, class: 'xf-cost'}),
+        chip: chipG(x0, ym - 21, 130, 22, from), verdict: verdictG(vx, ym - 21, vw, 22, 11), stamp: stampG(bx + bw + 2, ym, 10)};
+      G.svg.append(row.band, lines(cx, ym + 4.5 - (ls.length - 1) * 7, ls, 14, 'xf-band-l', {'text-anchor': 'middle', style: 'font-size:12.5px'}),
+        row.stamp, row.cost, ...row.chip, row.verdict);
+      G.rows.push(row);
+    });
+    return G;
+  }
+
+  const HEX = '0123456789abcdef', DIG = '0123456789', LOW = 'abcdefghijklmnopqrstuvwxyz', UP = LOW.toUpperCase();
+  const pick = s => s[Math.floor(Math.random() * s.length)];
+  // a value scrambles in its own alphabet: hex stays hex, digits digits, letters letters of the same case; separators keep their place
+  const scramble = v => { const hex = /^[0-9a-f…]+$/.test(v);
+    return [...v].map(c => hex && HEX.includes(c) ? pick(HEX) : DIG.includes(c) ? pick(DIG) : LOW.includes(c) ? pick(LOW) : UP.includes(c) ? pick(UP) : c).join(''); };
+  let narrowNow = host.clientWidth < 720, inst = null;
+  function build() {
+    const wasPaused = inst?.state().paused;   // a rebuild (a resize across the breakpoint) keeps the reader's pause
+    inst?.destroy();
+    const G = narrowNow ? narrow() : wide(), R = G.rows;
+    host.replaceChildren(G.svg);
+    const setVerdict = (k, v) => { R[k].verdict.lastChild.textContent = VERDICT[v]; R[k].verdict.setAttribute('class', 'xf-verdict' + (v ? ' xf-' + v : '')); };
+    const setStamp = (k, v) => { R[k].stamp.lastChild.textContent = v === 'miss' ? '✗' : v ? '✓' : ''; R[k].stamp.setAttribute('class', 'xf-stamp' + (v ? ` xf-on xf-${v}` : '')); };
+    const setCost = (k, ms) => R[k].cost.setAttribute('width', (G.maxW * Math.max(0, Math.min(ms, PAIN[k])) / PAIN[0]).toFixed(1));
+    let lastS = 0;
+    inst = explainer(host, {
+      name: 'pyramid', bar, hold: 3000,
+      reset() { L.forEach((l, k) => { R[k].chip[1].textContent = l[4]; setVerdict(k, ''); setStamp(k, ''); setCost(k, 0); R[k].band.classList.remove('xf-hot'); }); },
+      beats: [5, 4, 3, 2, 1, 0].map(k => ({dur: DUR[k], cap: CAPS[k],
+        cues: [[0, () => R.forEach((r, j) => r.band.classList.toggle('xf-hot', j === k))]],
+        tick: (p, sc) => {   // the value scrambles while the cost bar grows at one rate for every level; then the verdict, then the band's stamp
+          const ms = p * DUR[k] - 400, [, , , , from, to, v] = L[k];
+          if (ms < 0) return;
+          setCost(k, ms);
+          if (ms < PAIN[k] && !sc.instant) { if (Math.abs(ms - lastS) > 55) { lastS = ms; R[k].chip[1].textContent = scramble(from); } return; }
+          R[k].chip[1].textContent = to; setVerdict(k, v);
+          if (ms >= PAIN[k] + 150 || sc.instant) setStamp(k, v);
+        }})),
+    });
+    if (wasPaused) inst.pause();
+  }
+  build();
+  // the rebuild runs just after the observer's callback: rebuilding inside it changes the host's height, which Chrome reports as
+  // an error ("ResizeObserver loop completed with undelivered notifications")
+  let later = 0;
+  new ResizeObserver(([en]) => { if (en.contentRect.width === 0) return; const v = en.contentRect.width < 720;
+    if (v !== narrowNow) { narrowNow = v; clearTimeout(later); later = setTimeout(build); } }).observe(host);
 })();
 
 // ---------- term tooltips (this block is identical in field-map.html and attack-defense-codex.html) ----------
