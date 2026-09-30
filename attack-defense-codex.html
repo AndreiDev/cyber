@@ -69,6 +69,19 @@
   .count{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted-dim); margin-left:auto;}
   .controls > *{flex:0 0 auto; white-space:nowrap;}
   @media (max-width:700px){ .controls{flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;} .controls::-webkit-scrollbar{display:none;} } /* one row, so the sticky height stays fixed */
+  /* the open case at the reading line, in its surface color; a link back to the case's top */
+  .nowcase{--c:var(--muted); display:inline-flex; align-items:center; gap:8px; max-width:min(52vw,480px); margin-left:auto; padding:4px 11px 4px 9px;
+    font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--fg); border:1px solid color-mix(in srgb,var(--c) 55%,var(--line)); border-radius:7px;
+    background:color-mix(in srgb,var(--c) 10%,transparent);}
+  .nowcase[hidden]{display:none;}
+  .nowcase:hover{color:var(--fg); border-color:var(--c);}
+  .nowcase:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  .nowcase .nk{letter-spacing:.1em; color:var(--muted-dim);}
+  .nowcase .nn{color:var(--c); font-weight:500;}
+  .nowcase .nt{min-width:0; overflow:hidden; text-overflow:ellipsis; font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:12.5px;}
+  .nowcase .nd{flex:0 0 auto; color:var(--muted);}
+  .nowcase:not([hidden]) + .count{margin-left:10px;}
+  @media (max-width:700px){ .nowcase{order:-1; margin-left:0; max-width:calc(100vw - 40px);} }
 
 
   /* card */
@@ -394,6 +407,7 @@
     <button class="btn" data-f="exp">Expand all</button>
     <button class="btn" data-f="col">Collapse all</button>
     <button class="btn" data-f="all">Clear filter</button>
+    <a class="nowcase" id="nowcase" href="#cards" hidden><span class="nk">NOW</span><span class="nn"></span><span class="nt"></span><span class="nd" hidden>› deep dive</span></a>
     <span class="count" id="count"></span>
   </div>
 
@@ -3504,6 +3518,27 @@ function openTarget(){
   el.scrollIntoView();
 }
 openTarget(); window.addEventListener('hashchange',openTarget);
+
+// the controls bar names the open case at the reading line (a third of the way down the space below the sticky bars), adding
+// "deep dive" when that line is inside the case's open deep dive; nothing when no open case is there
+(() => {
+  const bar = document.getElementById('controls'), chip = document.getElementById('nowcase');
+  const [nn, nt, nd] = ['.nn', '.nt', '.nd'].map(s => chip.querySelector(s));
+  const at = line => d => { const r = d.getBoundingClientRect(); return r.top <= line && r.bottom > line; };
+  let cur = null, curDeep = null;
+  const update = () => {
+    const top = parseFloat(getComputedStyle(bar).top) + bar.offsetHeight, hit = at(top + (innerHeight - top) / 3);   // measured from where the bar sticks
+    const card = [...document.querySelectorAll('#cards > .ex[open]:not(.hide)')].find(hit) || null;
+    const deep = card && [...card.querySelectorAll('details.deep[open]')].find(hit) || null;
+    if (card === cur && deep === curDeep) return;
+    cur = card; curDeep = deep; chip.hidden = !card; if (!card) return;
+    const k = +card.id.slice(2), title = card.querySelector('summary h3').textContent;
+    nn.textContent = String(k).padStart(2, '0'); nt.textContent = title; nd.hidden = !deep;
+    chip.href = '#' + card.id; chip.title = `Case ${nn.textContent}: ${title} (back to its top)`; chip.style.setProperty('--c', SURF[EX[k - 1].surf].c);
+  };
+  addEventListener('scroll', update, {passive: true}); addEventListener('resize', update);
+  document.getElementById('cards').addEventListener('toggle', update, true); update();
+})();
 </script>
 </body>
 </html>

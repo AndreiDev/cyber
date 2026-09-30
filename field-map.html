@@ -45,6 +45,7 @@
   .nav{position:sticky; top:38px; z-index:20; margin:24px -20px 0; padding:11px 20px; background:rgba(12,15,20,.88); backdrop-filter:blur(10px); border-bottom:1px solid var(--line-soft); display:flex; gap:7px; flex-wrap:wrap;}
   .nav a{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:7px; padding:4px 10px;}
   .nav a:hover{color:var(--fg); border-color:var(--muted-dim);}
+  .nav a.on{color:var(--fg); border-color:var(--amber); background:rgba(228,166,78,.1);}
   @media (max-width:700px){ .nav{flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;} .nav::-webkit-scrollbar{display:none;} .nav a{flex:0 0 auto; white-space:nowrap;} }
 
   section{margin-top:52px; scroll-margin-top:60px;}
@@ -1784,6 +1785,27 @@ const TermTips=(()=>{
 })();
 TermTips.init(TERMS);
 TermTips.annotate(document.querySelector('.wrap'));
+
+// the section bar marks the section being read: the last one whose top has passed a line a third of the way down the space
+// below the sticky bars (at the very bottom of the page, the last section). On a phone the one-row bar slides the mark into view.
+(() => {
+  const bar = document.querySelector('.nav'), links = [...bar.querySelectorAll('a[href^="#"]')];
+  const secs = links.map(a => document.getElementById(a.getAttribute('href').slice(1)));
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  let cur = null;
+  const update = () => {
+    const top = parseFloat(getComputedStyle(bar).top) + bar.offsetHeight, line = top + (innerHeight - top) / 3;   // measured from where the bar sticks
+    let k = -1; secs.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= line) k = i; });
+    if (k >= 0 && scrollY + innerHeight >= document.documentElement.scrollHeight - 2) k = secs.length - 1;
+    const a = links[k] || null; if (a === cur) return;
+    if (cur) { cur.classList.remove('on'); cur.removeAttribute('aria-current'); }
+    cur = a; if (!a) return;
+    a.classList.add('on'); a.setAttribute('aria-current', 'location');
+    if (a.offsetLeft < bar.scrollLeft || a.offsetLeft + a.offsetWidth > bar.scrollLeft + bar.clientWidth)
+      bar.scrollTo({left: a.offsetLeft - (bar.clientWidth - a.offsetWidth) / 2, behavior: reduced.matches ? 'auto' : 'smooth'});
+  };
+  addEventListener('scroll', update, {passive: true}); addEventListener('resize', update); update();
+})();
 </script>
 </body>
 </html>
