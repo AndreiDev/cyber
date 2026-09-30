@@ -9,33 +9,79 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{color-scheme:dark; --ink:#0C0F14; --panel:#131822; --panel-2:#19212C; --line:#28313E; --line-soft:#1E2631;
+  :root{color-scheme:dark; --ink:#0C0F14; --panel:#131822; --panel-2:#19212C; --line:#28313E; --line-soft:#1E2631; --code-bg:#0A0E13;
     --fg:#E7EDF4; --muted:#94A0B0; --muted-dim:#66717F; --amber:#E4A64E; --def:#57AECB; --atk:#E06A6A; --purple:#AD8CE6; --ok:#6CC08A;
     box-sizing:border-box; padding-top:env(safe-area-inset-top,0px);}
   *{box-sizing:border-box;} body{margin:0; background:var(--ink); color:var(--fg); font-family:"IBM Plex Sans",system-ui,sans-serif; line-height:1.6; -webkit-font-smoothing:antialiased;}
-  .wrap{max-width:900px; margin:0 auto; padding:0 20px 90px;}
+  .wrap{max-width:900px; margin:0 auto; padding:0 max(20px,env(safe-area-inset-right)) max(48px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));}
   a{color:var(--amber); text-decoration:none;}
-  header{padding:60px 0 30px; border-bottom:1px solid var(--line-soft);}
-  .kicker{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em; color:var(--amber); display:flex; align-items:center; gap:10px; margin-bottom:20px;}
-  .kicker::before{content:""; flex:0 0 26px; height:1px; background:var(--amber);}
-  .kicker{align-items:flex-start; line-height:1.5;} .kicker::before{margin-top:.72em;}
+  header{padding:56px 0 0;}
+  .kicker{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em; color:var(--amber); display:flex; align-items:flex-start; line-height:1.5; gap:10px; margin-bottom:20px;}
+  .kicker::before{content:""; flex:0 0 26px; height:1px; margin-top:.72em; background:var(--amber);}
+  h1{font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:clamp(2rem,5vw,3rem); line-height:1.05; letter-spacing:-.02em; margin:0 0 14px; text-wrap:balance;}
+  .lede{font-size:1.1rem; line-height:1.6; color:var(--muted); margin:0; max-width:34em; text-wrap:pretty;}
+
+  /* the two doors: an animated scene over a title, one line and an arrow */
+  .doors{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:36px;}
+  .door{--c:var(--amber); display:flex; flex-direction:column; color:inherit; background:var(--panel); border:1px solid var(--line-soft); border-radius:16px; overflow:hidden;
+    transition:transform .25s ease, border-color .25s, box-shadow .25s;}
+  .door:hover{transform:translateY(-3px); border-color:color-mix(in srgb,var(--c) 50%,var(--line)); box-shadow:0 18px 44px -22px color-mix(in srgb,var(--c) 65%,transparent);}
+  .door:focus-visible{outline:2px solid var(--amber); outline-offset:3px;}
+  .scene{display:block; width:100%; height:auto; aspect-ratio:8/5; border-bottom:1px solid var(--line-soft);
+    background:radial-gradient(110% 90% at 50% 42%,color-mix(in srgb,var(--c) 8%,var(--code-bg)),var(--code-bg) 72%);}
+  .door-t{padding:16px 20px 20px;}
+  .alt{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.15em; color:var(--c);}
+  .name{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:4px 0 6px; font-family:"Space Grotesk",system-ui,sans-serif; font-weight:600; font-size:1.5rem; line-height:1.2; letter-spacing:-.01em; color:var(--fg);}
+  .arr{color:var(--c); transition:transform .25s;}
+  .door:hover .arr,.door:focus-visible .arr{transform:translateX(5px);}
+  .sub{margin:0; font-size:.95rem; line-height:1.5; color:var(--muted); text-wrap:pretty;}
+  .motion{display:flex; justify-content:flex-end; margin-top:12px;}
+  .pause{display:inline-flex; align-items:center; gap:8px; padding:5px 12px 5px 10px; font:11px/1 "IBM Plex Mono",ui-monospace,monospace; letter-spacing:.08em; color:var(--muted-dim);
+    background:none; border:1px solid var(--line-soft); border-radius:999px; cursor:pointer;}
+  .pause:hover{color:var(--fg); border-color:var(--line);}
+  .pause:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  .pause svg{width:9px; height:9px; fill:currentColor;}
+  footer{margin-top:40px; padding-top:18px; border-top:1px solid var(--line-soft); color:var(--muted-dim); font-size:.84rem; line-height:1.7; scroll-margin-top:58px;}
+  footer a{color:var(--muted);} footer a:hover{color:var(--amber);}
+
+  /* inside the scenes (SVG units: each scene is 400 × 250) */
+  .scene .mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.1em;}
+  .scene .dim{fill:var(--muted-dim);}
+  .scene .halo{fill:none; stroke-width:2;}
+  .scene .ring{fill:none; stroke:var(--line-soft); stroke-dasharray:2 5;}
+  .scene .spoke{stroke:var(--line); stroke-dasharray:1.5 4;}
+  .scene .edge{stroke:var(--def); stroke-opacity:.35;}
+  .scene .core{fill:var(--panel); stroke:var(--line); stroke-width:1.5; transition:stroke .3s;}
+  .scene .core.on{stroke:var(--amber);}
+  .scene .mark{fill:none; stroke:var(--amber); stroke-width:4.4; stroke-linecap:round;}
+  .scene .lbl{font-size:11px; letter-spacing:.04em; paint-order:stroke; stroke:var(--code-bg); stroke-width:4px; stroke-linejoin:round;}
+  .scene .lane{fill:var(--ink); stroke:var(--line-soft);}
+  .scene .track{stroke:var(--line); stroke-width:2.5;}
+  .scene .prog{stroke:var(--atk); stroke-width:2.5;}
+  .scene .st{fill:var(--ink); stroke:var(--line); stroke-width:2; transition:stroke .3s;}
+  .scene .st.hit{stroke:var(--atk);}
+  .scene .st.safe{stroke:var(--ok); stroke-dasharray:4 3;}
+  .scene .num{font-size:10.5px; letter-spacing:.02em; fill:var(--muted-dim);}
+  .scene .num.hit{fill:var(--atk);}
+  .scene .name{fill:var(--muted-dim); transition:fill .3s;}
+  .scene .name.hit{fill:var(--fg);}
+  .scene .drop{stroke:var(--line); stroke-width:1.4; stroke-dasharray:3 4;}
+  .scene .drop.hit.seen{stroke:var(--def);}
+  .scene .drop.hit.faint{stroke:var(--def); stroke-opacity:.45;}
+  .scene .seg{fill:transparent; transition:fill .4s;}
+  .scene .seg.lit.seen{fill:rgba(87,174,203,.16);}
+  .scene .seg.lit.faint{fill:rgba(87,174,203,.07);}
+  .scene .pill.seen{fill:var(--def);}
+  .scene .pill.faint{fill:none; stroke:var(--def); stroke-width:1.4; stroke-dasharray:3 2;}
+  .scene .word.seen{fill:var(--def);}
+  .scene .word.faint{fill:var(--def); fill-opacity:.7;}
+  .scene .word.blind{fill:var(--muted-dim);}
+  .scene .word.stop{fill:var(--ok);}
+  .scene .gate{stroke:var(--ok); stroke-width:3.5; stroke-linecap:round;}
+
+  @media (max-width:700px){ .doors{grid-template-columns:1fr;} header{padding-top:40px;} }
   @media (max-width:560px){ .kicker{font-size:10.5px; letter-spacing:.1em; gap:8px;} .kicker::before{flex-basis:16px;} }
-  h1{font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:clamp(2rem,5vw,3rem); line-height:1.05; letter-spacing:-.02em; margin:0 0 16px;}
-  .lede{font-size:1.1rem; line-height:1.6; color:var(--muted); margin:0 0 12px; text-wrap:pretty;}
-  .lede strong{color:var(--fg); font-weight:600;}
-  .hint{font-size:.92rem; line-height:1.55; color:var(--muted-dim); margin:0 0 0; text-wrap:pretty;}
-  h1{text-wrap:balance;}
-  .grp{margin-top:40px;} .grp h2{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted-dim); margin:0 0 12px;}
-  .cards{display:grid; gap:10px;}
-  .c{display:block; border:1px solid var(--line-soft); border-left:3px solid var(--c,var(--muted)); border-radius:11px; padding:16px 18px; background:var(--panel); transition:border-color .15s;}
-  .c:hover{border-color:var(--line); border-left-color:var(--c,var(--muted));}
-  .c .t{font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:1.08rem; margin:0 0 4px; color:var(--fg);}
-  .c .d{font-size:.9rem; color:var(--muted); margin:0;}
-  .c .f{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--muted-dim); margin-top:6px; display:block;}
-  .note{margin-top:36px; padding:18px 20px; border:1px solid var(--line-soft); border-radius:11px; background:var(--panel-2); font-size:.9rem; color:var(--muted);}
-  .note{scroll-margin-top:58px;} .note:target{border-color:var(--amber);}
-  .note b{color:var(--fg);} .note code{font-family:"IBM Plex Mono",monospace; background:var(--panel); padding:1px 5px; border-radius:4px; border:1px solid var(--line); font-size:.85em;}
-  footer{margin-top:40px; padding-top:22px; border-top:1px solid var(--line-soft); color:var(--muted-dim); font-size:.84rem;}
+  @media (prefers-reduced-motion:reduce){ .door,.arr{transition:none;} .door:hover,.door:hover .arr{transform:none;} .motion{display:none;} }
 
   /* shared library header — identical on every page (only max-width follows the page's .wrap).
      Fixed 41px tall (40px + border): sticky bars below sit at top:38px and scroll-padding assumes it. */
@@ -58,32 +104,153 @@
   <header>
     <div class="kicker">CYBERSECURITY FLUENCY LIBRARY</div>
     <h1>Two pages, two altitudes</h1>
-    <p class="lede">A learning library on the security craft, for someone who can program but is new to security. It reads at two levels: the <strong>Field Map</strong>, a standalone view of the whole landscape, and the <strong>Codex</strong>, thirty real cases that each teach one attack start to finish.</p>
-    <p class="hint">Start with the Field Map’s Foundations section. The detection rules, and two longer worked methods (building a detection end to end, and emulating an attacker to test it), live inside the codex cards.</p>
+    <p class="lede">Learn the security craft as a programmer: see the whole field first, then zoom into real attacks.</p>
   </header>
 
-  <div class="grp">
-    <h2>Zoom out</h2>
-    <div class="cards">
-      <a class="c" href="field-map.html" style="--c:var(--amber)"><p class="t">🗺️ The Field Map</p><p class="d">The high-level view, complete on its own — twelve foundational building blocks, the attack lifecycle (the 15 stages of an intrusion in MITRE ATT&CK, the industry’s shared catalog of attacker behavior), the eleven attack surfaces, every product category (what it does, what it sees, where it fails), the disciplines, the adversaries, and the shared frameworks. Read this first.</p><span class="f">field-map.html</span></a>
-    </div>
-  </div>
+  <nav class="doors" aria-label="The two pages">
+    <a class="door" href="field-map.html" style="--c:var(--amber)">
+      <svg class="scene" id="scene-map" viewBox="0 0 400 250" aria-hidden="true" focusable="false"></svg>
+      <div class="door-t"><div class="alt">ZOOM OUT</div><div class="name">The Field Map <span class="arr" aria-hidden="true">→</span></div>
+        <p class="sub">The whole field on one page: how attacks work, and how defenders see them.</p></div>
+    </a>
+    <a class="door" href="attack-defense-codex.html" style="--c:var(--def)">
+      <svg class="scene" id="scene-chain" viewBox="0 0 400 250" aria-hidden="true" focusable="false"></svg>
+      <div class="door-t"><div class="alt">ZOOM IN</div><div class="name">The Codex <span class="arr" aria-hidden="true">→</span></div>
+        <p class="sub">Thirty real attacks from 2014 to 2025, traced step by step, with the rules that catch them.</p></div>
+    </a>
+  </nav>
+  <div class="motion"><button class="pause" type="button"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1h2v8H2zM6 1h2v8H6z"/></svg><span>Pause motion</span></button></div>
 
-  <div class="grp">
-    <h2>Zoom in</h2>
-    <div class="cards">
-      <a class="c" href="attack-defense-codex.html" style="--c:var(--def)"><p class="t">🛰️ Attack → Defense Codex</p><p class="d">30 real cases from 2014 to 2025, each a short course: concepts first, the story in plain language, the attack step by step with the attacker’s reasoning and the trace each step leaves, the defense with reasoning, <b style="color:var(--fg)">detection rules you can run</b> (in the standard rule formats: Sigma for logs, YARA for files, KQL for Microsoft’s security tools, Falco for containers; or the honest alternative where no rule can work), the real outcome, lessons, and a self-check. Filterable by attack surface, the part of an organization the attack came through (identity, cloud, supply chain and eight more).</p><span class="f">attack-defense-codex.html</span></a>
-      <a class="c" href="attack-defense-codex.html#blue-loop" style="--c:var(--ok)"><p class="t">🔁 Inside case 10 — the blue loop</p><p class="d">How a detection engineer builds one detection end to end, using Kerberoasting (a classic attack that cracks Windows service-account passwords offline) as the example: hypothesis → check telemetry → emulate → author → validate → tune → measure → document → maintain.</p><span class="f">attack-defense-codex.html#blue-loop</span></a>
-      <a class="c" href="attack-defense-codex.html#red-loop" style="--c:var(--purple)"><p class="t">🟣 Inside case 12 — the red / purple loop</p><p class="d">The attacker’s side of the same loop: an authorized red team imitates a real adversary and tries to evade detection, every concept paired with its defensive counter, converging on purple teaming (attackers and defenders working side by side to find and close detection gaps).</p><span class="f">attack-defense-codex.html#red-loop</span></a>
-    </div>
-  </div>
-
-  <div class="note" id="layers">
-    <p style="margin:0 0 8px"><b>ATT&CK Navigator layers</b> (JSON, not web pages). MITRE ATT&CK is the public catalog of attacker techniques that every codex case is tagged with, and the Navigator is MITRE’s free web tool that draws that catalog as a grid. These layer files color the grid by how many of the 30 cases use each technique; there are three because enterprise IT, mobile and industrial control systems (ICS) are separate ATT&CK catalogs: <a href="attack-navigator-enterprise.json"><code>attack-navigator-enterprise.json</code></a>, <a href="attack-navigator-mobile.json"><code>-mobile.json</code></a>, <a href="attack-navigator-ics.json"><code>-ics.json</code></a>. Import them at <a href="https://mitre-attack.github.io/attack-navigator/" target="_blank" rel="noopener">mitre-attack.github.io/attack-navigator</a> via <b>Open Existing Layer → Upload from local</b> to see technique coverage as a heatmap. The AI cases map to <a href="https://atlas.mitre.org/" target="_blank" rel="noopener">MITRE ATLAS</a>, MITRE’s equivalent catalog for attacks on AI systems, instead; ATLAS is not a Navigator domain, so those techniques are listed in a plain reference file, <a href="atlas-coverage-ai.json"><code>atlas-coverage-ai.json</code></a>.</p>
-    <p style="margin:0"><b>Working in Claude Code?</b> See <code>CLAUDE.md</code> in this folder — it gives a fresh session the full project context, file map, and design conventions automatically.</p>
-  </div>
-
-  <footer>Two self-contained HTML pages · dark operator-console theme · Space Grotesk / IBM Plex. No build step — open any file in a browser.</footer>
+  <footer id="layers">Coverage files (JSON) for MITRE’s <a href="https://mitre-attack.github.io/attack-navigator/">ATT&amp;CK Navigator</a>:
+    <a href="attack-navigator-enterprise.json">Enterprise</a> · <a href="attack-navigator-mobile.json">Mobile</a> · <a href="attack-navigator-ics.json">ICS</a>,
+    and for <a href="https://atlas.mitre.org/">MITRE ATLAS</a>: <a href="atlas-coverage-ai.json">AI cases</a>.</footer>
 </div>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const S = (tag, a = {}, ...kids) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); e.append(...kids); return e; };
+  const set = (e, a) => { for (const k in a) e.setAttribute(k, a[k]); };
+  const clamp = x => Math.max(0, Math.min(1, x));
+  const span = (t, a, b) => clamp((t - a) / (b - a));                          // 0 before a, 1 after b
+  const fade = (t, a, b, c, d) => Math.min(span(t, a, b), 1 - span(t, c, d));  // in over a→b, out over c→d
+  const ease = x => x < .5 ? 2 * x * x : 1 - (-2 * x + 2) ** 2 / 2;
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const f1 = n => n.toFixed(1);
+  // a ring that grows from r0 to r1 and fades, starting at t0 and lasting d
+  const ring = (el, x, y, t, t0, d, r0, r1) => { const k = span(t, t0, t0 + d);
+    set(el, {cx: f1(x), cy: f1(y), r: f1(lerp(r0, r1, 1 - (1 - k) ** 2)), opacity: k > 0 && k < 1 ? (.9 * (1 - k)).toFixed(2) : 0}); };
+
+  // ---------- zoom out: the eleven attack surfaces circle the defenders. One at a time is probed: the attacker lands (red),
+  // that surface's log travels in (cyan), a rule fires (amber) and the surface is contained (green).
+  const SURF = [['Supply chain', '#E4A64E'], ['Identity / access', '#57AECB'], ['Web / app', '#E8894A'], ['Cloud / containers', '#6CC08A'],
+    ['Endpoint / malware', '#AD8CE6'], ['Edge / perimeter', '#E06A6A'], ['Email / social eng', '#E58AB8'], ['Mobile', '#6E9BE0'],
+    ['OT / ICS', '#9AA7B5'], ['Availability / DDoS', '#C7B45E'], ['AI / LLM apps', '#7FD1C3']];
+  function zoomOut(svg) {
+    const CX = 200, CY = 125, RX = 150, RY = 86, P = 3.6, N = SURF.length, ORDER = [1, 6, 3, 9, 4, 0, 7, 2, 10, 5, 8];
+    const R = RX + 12, pt = d => `${f1(R * Math.cos(d * Math.PI / 180))} ${f1(R * Math.sin(d * Math.PI / 180))}`;
+    // a slow sweep: the defenders' view, turning over everything
+    const sweep = S('g', {}, ...Array.from({length: 10}, (_, i) => S('path', {d: `M0 0L${pt(-4 * i - 4)}A${R} ${R} 0 0 1 ${pt(-4 * i)}Z`,
+      style: `fill:var(--def);fill-opacity:${(.1 - i * .009).toFixed(3)}`})), S('line', {x2: R, class: 'edge'}));
+    const spokes = SURF.map(() => S('line', {class: 'spoke'}));
+    const nodes = SURF.map(([, c]) => S('g', {}, S('circle', {r: 7, style: `fill:var(--ink);stroke:${c};stroke-width:2`}), S('circle', {r: 2.6, style: `fill:${c}`})));
+    const core = S('rect', {x: -19, y: -19, width: 38, height: 38, rx: 9, class: 'core'});
+    const hit = S('circle', {class: 'halo', style: 'stroke:var(--atk)'}), ok = S('circle', {class: 'halo', style: 'stroke:var(--ok)'});
+    const alarm = S('circle', {class: 'halo', style: 'stroke:var(--amber)'});
+    const tail = [0, 1, 2].map(j => S('circle', {r: 3.4 - j * .8, style: 'fill:var(--atk)'}));
+    const atk = S('circle', {r: 4.4, class: 'atk', style: 'fill:var(--atk)'});
+    const log = S('rect', {x: -6.5, y: -3, width: 13, height: 6, rx: 3, style: 'fill:var(--def)'});
+    const label = S('text', {class: 'mono lbl', 'text-anchor': 'middle'});
+    svg.append(...[.4, .7, 1].map(k => S('ellipse', {cx: CX, cy: CY, rx: RX * k, ry: RY * k, class: 'ring'})), sweep, ...spokes,
+      S('g', {transform: `translate(${CX} ${CY})`}, core, S('path', {d: 'M6.4 -7.6A9.9 9.9 0 1 0 9.9 0', class: 'mark'}),
+        S('rect', {x: 6.6, y: -12.7, width: 7.2, height: 7.2, rx: 1.7, style: 'fill:var(--amber)'})),
+      alarm, ...nodes, hit, ok, log, ...[...tail].reverse(), atk, label);
+    const render = t => {
+      const base = -Math.PI / 2 + t * 2 * Math.PI / 90;   // the ring of surfaces turns once every 90 s
+      const pos = i => { const a = base + i * 2 * Math.PI / N; return [CX + RX * Math.cos(a), CY + RY * Math.sin(a), a]; };
+      const k = Math.floor(t / P), u = t - k * P, hot = ORDER[k % N], [x, y, a] = pos(hot);
+      nodes.forEach((g, i) => { const [nx, ny] = pos(i), s = i === hot ? 1 + .3 * fade(u, 1.2, 1.4, P - .5, P - .2) : 1;
+        set(g, {transform: `translate(${f1(nx)} ${f1(ny)}) scale(${s.toFixed(3)})`}); set(spokes[i], {x1: CX, y1: CY, x2: f1(nx), y2: f1(ny)}); });
+      set(sweep, {transform: `translate(${CX} ${CY}) scale(1 ${(RY / RX).toFixed(3)}) rotate(${f1(t * 360 / 7 % 360)})`});
+      // the attacker comes in from beyond the surface, along its own direction
+      const sx = CX + 1.5 * RX * Math.cos(a), sy = CY + 1.6 * RY * Math.sin(a);
+      const at = s => { const e = ease(span(s, 0, 1.2)); return [lerp(sx, x, e), lerp(sy, y, e)]; };
+      const [ax, ay] = at(u);
+      set(atk, {cx: f1(ax), cy: f1(ay), opacity: fade(u, 0, .3, 2.5, 2.9).toFixed(2)});
+      tail.forEach((c, j) => { const [tx, ty] = at(u - .06 * (j + 1)); set(c, {cx: f1(tx), cy: f1(ty), opacity: ((.45 - .13 * j) * fade(u, .1, .3, 1.1, 1.25)).toFixed(2)}); });
+      ring(hit, x, y, u, 1.2, .7, 7, 26);
+      const e = ease(span(u, 1.45, 2.1)), deg = Math.atan2(CY - y, CX - x) * 180 / Math.PI;
+      set(log, {transform: `translate(${f1(lerp(x, CX, e))} ${f1(lerp(y, CY, e))}) rotate(${f1(deg)})`, opacity: fade(u, 1.45, 1.6, 2, 2.12).toFixed(2)});
+      ring(alarm, CX, CY, u, 2.1, .9, 20, 50); core.classList.toggle('on', u > 2.1 && u < 2.9);
+      ring(ok, x, y, u, 2.45, .8, 7, 20);
+      label.textContent = SURF[hot][0]; label.style.fill = SURF[hot][1];
+      set(label, {x: f1(Math.max(76, Math.min(324, x))), y: f1(y - 16), opacity: fade(u, 1.2, 1.45, P - .5, P - .2).toFixed(2)});
+    };
+    return {render, still: 1.95};
+  }
+
+  // ---------- zoom in: one attack, step by step, the way every codex card draws it. Each step leaves a trace in the logs, a faint
+  // one, or none; a rule fires after step 4 (NOTICED), and the attacker is contained before the last step.
+  function zoomIn(svg) {
+    const X = [78, 140, 202, 264, 350], Y = 92, LY = 172, T = 11, A = [.4, 2.2, 4, 5.8], DX = 296, GX = 320;   // stations, rail, log lane, cycle, arrivals
+    const NAME = ['ENTRY', 'FOOTHOLD', 'SPREAD', 'STEAL', 'IMPACT'], VIS = ['seen', 'faint', 'blind', 'seen', 'stop'];
+    const WORD = {seen: 'TRACE', faint: 'FAINT', blind: 'NO SIGNAL', stop: 'STOPPED'};
+    const prog = S('line', {x1: X[0], y1: Y, y2: Y, class: 'prog'});
+    const st = X.map((x, i) => ({
+      drop: S('line', {x1: x, y1: Y + 15, x2: x, y2: LY, class: 'drop ' + VIS[i]}),
+      seg: S('rect', {x: x - 27, y: LY + 5, width: 54, height: 24, rx: 5, class: 'seg ' + VIS[i]}),
+      pill: S('rect', {x: x - 17, width: 34, height: 12, rx: 6, opacity: 0, class: 'pill ' + VIS[i]}),
+      ring: S('circle', {cx: x, cy: Y, r: 14, class: 'st'}),
+      num: S('text', {x, y: Y + 4, class: 'mono num', 'text-anchor': 'middle'}, '0' + (i + 1)),
+      name: S('text', {x, y: Y - 26, class: 'mono name', 'text-anchor': 'middle'}, NAME[i]),
+      word: S('text', {x, y: LY + 54, class: 'mono word ' + VIS[i], 'text-anchor': 'middle'}, WORD[VIS[i]]),
+    }));
+    const noticed = S('g', {class: 'noticed', transform: `translate(${DX} ${Y})`},
+      S('rect', {x: -6, y: -6, width: 12, height: 12, rx: 1.5, transform: 'rotate(45)', style: 'fill:var(--amber)'}),
+      S('text', {y: 30, class: 'mono', 'text-anchor': 'middle', style: 'fill:var(--amber)'}, 'NOTICED'));
+    const nhalo = S('circle', {class: 'halo', style: 'stroke:var(--amber)'}), gate = S('line', {x1: GX, x2: GX, class: 'gate'});
+    const burst = S('circle', {class: 'halo', style: 'stroke:var(--ok)'}), caught = S('circle', {class: 'halo', style: 'stroke:var(--ok)'});
+    const glow = S('circle', {r: 11, style: 'fill:var(--atk)'}), tok = S('circle', {r: 6, class: 'tok', style: 'fill:var(--atk)'});
+    svg.append(S('rect', {x: 20, y: LY, width: 360, height: 34, rx: 8, class: 'lane'}), S('text', {x: 22, y: LY - 7, class: 'mono dim'}, 'LOGS'),
+      ...st.flatMap(s => [s.drop, s.seg, s.pill]), S('line', {x1: X[0], y1: Y, x2: X[4], y2: Y, class: 'track'}), prog,
+      ...st.flatMap(s => [s.ring, s.num, s.name, s.word]), nhalo, noticed, gate, burst, caught, glow, tok);
+    const tokX = t => { let x = X[0]; for (let i = 1; i < 4; i++) x = lerp(x, X[i], ease(span(t, A[i] - .7, A[i]))); return x; };
+    const render = time => {
+      const t = time % T, out = 1 - span(t, 10.3, 10.8), on = out > .5, x = tokX(t);
+      set(prog, {x2: f1(x), opacity: out.toFixed(2)});
+      st.forEach((s, i) => {
+        const v = VIS[i], reached = i < 4 && t >= A[i] - .05;
+        [s.ring, s.num, s.name, s.drop].forEach(e => e.classList.toggle('hit', reached && on));
+        if (v === 'stop') { s.ring.classList.toggle('safe', t > 8 && on); set(s.word, {opacity: (span(t, 8.2, 8.45) * out).toFixed(2)}); return; }
+        const land = A[i] + (v === 'faint' ? 1.1 : .8), shown = v === 'blind' ? A[i] + .5 : land;
+        set(s.pill, {y: f1(lerp(Y + 15, LY + 11, ease(span(t, A[i] + .2, land)))), opacity: v === 'blind' ? 0 : (span(t, A[i] + .2, A[i] + .35) * out).toFixed(2)});
+        s.seg.classList.toggle('lit', t >= land && on);
+        set(s.word, {opacity: (span(t, shown, shown + .25) * out).toFixed(2)});
+      });
+      set(noticed, {opacity: (span(t, 6.9, 7.1) * out).toFixed(2)}); ring(nhalo, DX, Y, t, 6.9, .9, 8, 28);
+      const g = ease(span(t, 7.5, 7.75)) * 15; set(gate, {y1: f1(Y - g), y2: f1(Y + g), opacity: g ? out.toFixed(2) : 0}); ring(burst, GX, Y, t, 7.5, .7, 4, 20);
+      ring(caught, X[3], Y, t, 7.9, .7, 6, 22);
+      const to = fade(t, 0, .3, 7.9, 8.2); set(tok, {cx: f1(x), cy: Y, opacity: to.toFixed(2)}); set(glow, {cx: f1(x), cy: Y, opacity: (.22 * to).toFixed(3)});
+    };
+    return {render, still: 9.5};
+  }
+
+  // ---------- the clock: one virtual time for both scenes; paused by the button, stopped under reduced motion (the still frame)
+  const scenes = [zoomOut(document.getElementById('scene-map')), zoomIn(document.getElementById('scene-chain'))];
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)'), btn = document.querySelector('.pause');
+  let t = 0, last = null, raf = 0, paused = false;
+  const draw = () => scenes.forEach(s => s.render(reduced.matches ? s.still : t));
+  const frame = now => { raf = 0; if (last != null) t += Math.min(now - last, 100) / 1000; last = now; draw(); play(); };
+  const play = () => { if (!raf && !paused && !reduced.matches) raf = requestAnimationFrame(frame); };
+  btn.addEventListener('click', () => {
+    paused = !paused; btn.querySelector('span').textContent = paused ? 'Play motion' : 'Pause motion';
+    btn.querySelector('path').setAttribute('d', paused ? 'M2.5 1l6 4-6 4z' : 'M2 1h2v8H2zM6 1h2v8H6z');
+    if (paused) { cancelAnimationFrame(raf); raf = 0; last = null; } else play();
+  });
+  reduced.addEventListener('change', () => { last = null; draw(); play(); });
+  draw(); play();
+  window.HOME = {at(x) { t = x; draw(); }};   // for the tests: draw both scenes at time x
+})();
+</script>
 </body>
 </html>
